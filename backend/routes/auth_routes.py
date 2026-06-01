@@ -20,22 +20,14 @@ from utils.security import (
     verify_password
 )
 
+
 # Create router
 router = APIRouter(tags=["auth"])
 
-
-# -----------------------------
-# Response Schema
-# -----------------------------
-
+# Ensure UserCreateResponse is defined before use
 class UserCreateResponse(BaseModel):
     success: bool
     message: str
-
-
-# -----------------------------
-# Register
-# -----------------------------
 
 @router.post(
     "/register",
@@ -88,9 +80,9 @@ def register_user(
         db.commit()
         db.refresh(new_user)
 
+
         # Auto-create patient profile
         if new_user.role.lower() == "patient":
-
             patient = Patient(
                 user_id=new_user.id,
                 name=new_user.username,
@@ -101,9 +93,16 @@ def register_user(
                 height=0,
                 weight=0,
                 blood_group="Unknown",
-                profile_image=""
+                profile_image="",
+                email=new_user.email,
+                emergency_contact_name="",
+                emergency_contact_phone="",
+                emergency_contact_relationship="",
+                insurance_provider="",
+                policy_number="",
+                group_code="",
+                primary_clinic=""
             )
-
             db.add(patient)
             db.commit()
             db.refresh(patient)

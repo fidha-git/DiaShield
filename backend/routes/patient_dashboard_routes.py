@@ -33,12 +33,18 @@ def get_dashboard(
     if not data:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient profile not found")
 
-    # Convert recent_health_records to HealthRecordSummary
+    # Convert recent_health_records to HealthRecordSummary with all required fields
     recent_health_records = [
         HealthRecordSummary(
             id=hr.id,
-            created_at=hr.created_at,
-            summary=getattr(hr, "summary", None)
+            blood_sugar=hr.blood_sugar,
+            blood_pressure=hr.blood_pressure,
+            heart_rate=hr.heart_rate,
+            bmi=hr.bmi,
+            weight=hr.weight,
+            notes=hr.notes if hasattr(hr, "notes") else None,
+            recorded_at=hr.recorded_at,
+            created_at=hr.created_at
         ) for hr in data["recent_health_records"]
     ]
 

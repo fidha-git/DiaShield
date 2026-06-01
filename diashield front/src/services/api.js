@@ -8,8 +8,16 @@ const API = axios.create({
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    console.log("Token:", token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log("Authorization Header:", { Authorization: `Bearer ${token}` });
+    } else {
+      // If not on login/register, redirect to login
+      if (window.location.pathname !== "/login") {
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      }
     }
     return config;
   },

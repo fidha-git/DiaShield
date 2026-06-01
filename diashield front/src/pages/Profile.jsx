@@ -1,274 +1,432 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import API from '../services/api'
 
 export default function Profile() {
+    // Handle image upload
+    const handleImageUpload = async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+
+      const response = await API.post(
+        "/patient/upload-image",
+        formDataUpload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setFormData(prev => ({
+        ...prev,
+        profile_image: response.data.profile_image,
+      }));
+    };
   const [formData, setFormData] = useState({
-    fullName: 'Amal Al-Mansoori',
-    dob: '1981-04-12',
-    gender: 'Female',
-    bloodType: 'O+',
-    phone: '+971 50 123 4567',
-    email: 'amal.mansoori@example.com',
-    address: 'Downtown Dubai, UAE',
-    emergencyContact: 'Fatima Al-Mansoori',
-    emergencyRelation: 'Sister',
-    emergencyPhone: '+971 50 987 6543',
-    insuranceProvider: 'Daman National Health',
-    policyNumber: 'DM-98231-A',
-    groupNumber: 'G-7489'
+    name: '',
+    age: '',
+    gender: '',
+    phone: '',
+    address: '',
+    height: '',
+    weight: '',
+    blood_group: '',
+    profile_image: '',
+    email: '',
+    emergency_contact_name: '',
+    emergency_contact_phone: '',
+    emergency_contact_relationship: '',
+    insurance_provider: '',
+    policy_number: '',
+    group_code: '',
+    primary_clinic: '',
   })
-
+  const [patientId, setPatientId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
   const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState("")
+  const [imgUploading, setImgUploading] = useState(false)
+  const [imgError, setImgError] = useState("")
+  const [imgSuccess, setImgSuccess] = useState("")
+  const fileInputRef = useRef()
 
-  const handleSave = (e) => {
-    e.preventDefault()
-    setSaving(true)
-    setTimeout(() => {
-      setSaving(false)
-      alert('Demographics and profile preferences saved successfully!')
-    }, 1200)
+  // Fetch profile on mount
+  useEffect(() => {
+    const fetchProfile = async () => {
+      setLoading(true)
+      setError("")
+      try {
+        const res = await API.get('/patient/me')
+        setFormData({
+          name: res.data.name || '',
+          age: res.data.age || '',
+          gender: res.data.gender || '',
+          phone: res.data.phone || '',
+          address: res.data.address || '',
+          height: res.data.height || '',
+          weight: res.data.weight || '',
+          blood_group: res.data.blood_group || '',
+          profile_image: res.data.profile_image || '',
+          email: res.data.email || '',
+          emergency_contact_name: res.data.emergency_contact_name || '',
+          emergency_contact_phone: res.data.emergency_contact_phone || '',
+          emergency_contact_relationship: res.data.emergency_contact_relationship || '',
+          insurance_provider: res.data.insurance_provider || '',
+          policy_number: res.data.policy_number || '',
+          group_code: res.data.group_code || '',
+          primary_clinic: res.data.primary_clinic || '',
+        })
+        setPatientId(res.data.id)
+      } catch (error) {
+        setError("Failed to load profile. Please try again later.")
+        console.error(error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [])
+
+  // Handle form field changes
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setFormData(f => ({ ...f, [name]: value }))
   }
 
+  // Validate form
+  const validate = () => {
+    if (!formData.name) return "Name is required."
+    if (formData.age && isNaN(formData.age)) return "Age must be numeric."
+    if (formData.phone && !/^\+?\d{7,15}$/.test(formData.phone)) return "Phone number is invalid."
+    if (formData.height && isNaN(formData.height)) return "Height must be numeric."
+    if (formData.weight && isNaN(formData.weight)) return "Weight must be numeric."
+    return null
+  }
+
+  // Save profile
+  const handleSave = async (e) => {
+    e.preventDefault()
+    setSuccess("")
+    setError("")
+    const validationError = validate()
+    if (validationError) {
+      setError(validationError)
+      return
+    }
+    setSaving(true)
+    try {
+      await API.put(`/patient/update/${patientId}`, {
+        name: formData.name,
+        age: formData.age,
+        gender: formData.gender,
+        phone: formData.phone,
+        address: formData.address,
+        height: formData.height,
+        weight: formData.weight,
+        blood_group: formData.blood_group,
+        email: formData.email,
+        emergency_contact_name: formData.emergency_contact_name,
+        emergency_contact_phone: formData.emergency_contact_phone,
+        emergency_contact_relationship: formData.emergency_contact_relationship,
+        insurance_provider: formData.insurance_provider,
+        policy_number: formData.policy_number,
+        group_code: formData.group_code,
+        primary_clinic: formData.primary_clinic,
+      })
+      setSuccess("Profile updated successfully.")
+      // Refresh profile
+      const res = await API.get('/patient/me')
+      setFormData({
+        name: res.data.name || '',
+        age: res.data.age || '',
+        gender: res.data.gender || '',
+        phone: res.data.phone || '',
+        address: res.data.address || '',
+        height: res.data.height || '',
+        weight: res.data.weight || '',
+        blood_group: res.data.blood_group || '',
+        profile_image: res.data.profile_image || '',
+        email: res.data.email || '',
+        emergency_contact_name: res.data.emergency_contact_name || '',
+        emergency_contact_phone: res.data.emergency_contact_phone || '',
+        emergency_contact_relationship: res.data.emergency_contact_relationship || '',
+        insurance_provider: res.data.insurance_provider || '',
+        policy_number: res.data.policy_number || '',
+        group_code: res.data.group_code || '',
+        primary_clinic: res.data.primary_clinic || '',
+      })
+    } catch (error) {
+      setError("Failed to update profile. Please try again.")
+      console.error(error)
+    } finally {
+      setSaving(false)
+      setTimeout(() => setSuccess("") , 2000)
+    }
+  }
+  // Compute imageUrl for avatar
+  const imageUrl = formData?.profile_image
+    ? `http://127.0.0.1:8000/${formData.profile_image}`
+    : null;
+
   return (
-    <div className="p-unit-6 md:p-gutter min-h-screen">
-      <div className="max-w-container-max mx-auto">
-        {/* Header */}
-        <header className="mb-unit-8">
-          <h2 className="font-display-lg text-[32px] md:text-display-lg text-on-surface">Patient Profile</h2>
-          <p className="font-body-md text-on-surface-variant mt-1">Manage your administrative details and emergency care network contacts.</p>
-        </header>
-
-        <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-3 gap-unit-6">
-          {/* Left Column - Avatar & Core Info */}
-          <div className="lg:col-span-1 space-y-unit-6">
-            <div className="glass-card rounded-xl p-unit-6 text-center flex flex-col items-center relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-[6px] bg-gradient-to-r from-secondary to-tertiary"></div>
-              
-              <div className="relative mb-4 mt-2">
-                <img 
-                  alt="Patient Avatar large" 
-                  className="w-32 h-32 rounded-full border-4 border-white/10 group-hover:border-tertiary transition-colors duration-300"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuFah2Nex9h6V5CEgrhzEDV1RnYpcPovQJeoKdeVt28QcWySKqiCd-sSDIIHQnj9aN2ay43Hdkswwa9NSv0wBe7FM0fUjWz0K6MMVrd4YcjADpV02POPp7wYzWCy3br2iZu_ddmxK3Umva-2CWFLyNvNPVHlw1NKrnHWGmLNXlFD9d2C_Qwg45KE26coVQ1aw0SK-_OUY93y3L7VoP2Pv6xWzBeHt_vmXKbrzysOXuEXQGp79WKL575xPdPVFbOpe-3uhkJzOs5beQ"
+    <form onSubmit={handleSave} className="w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-unit-6">
+        {/* Left Column - Patient Profile Card + Insurance Coverage */}
+        <div className="flex flex-col gap-unit-6">
+          {/* Patient Profile Card */}
+          <div className="glass-card rounded-xl p-unit-6 flex flex-col items-center relative overflow-hidden">
+            <div className="w-[120px] h-[120px] rounded-full bg-surface-container flex items-center justify-center mb-4 relative group">
+              {imageUrl ? (
+                <img
+                  src={imageUrl}
+                  alt="Patient Avatar"
+                  className="w-full h-full object-cover rounded-full"
                 />
-                <button type="button" className="absolute bottom-1 right-1 bg-tertiary text-on-tertiary rounded-full p-2 hover:scale-105 transition-transform">
-                  <span className="material-symbols-outlined text-[18px]">photo_camera</span>
-                </button>
-              </div>
-
-              <h3 className="font-headline-md text-white text-[20px] font-bold">{formData.fullName}</h3>
-              <p className="font-label-md text-on-surface-variant text-[11px] tracking-wider uppercase mb-6">Patient ID: #DS-8829-X</p>
-              
-              <div className="w-full space-y-3 pt-4 border-t border-white/5 text-left">
-                <div className="flex justify-between">
-                  <span className="font-label-md text-on-surface-variant text-[11px] uppercase">Portal Access</span>
-                  <span className="font-headline-md text-green-400 text-[13px] flex items-center gap-1 font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span> Verified HIPAA
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="font-label-md text-on-surface-variant text-[11px] uppercase">Primary Clinic</span>
-                  <span className="font-body-sm text-white">Al Zahra Endocrinology</span>
-                </div>
-              </div>
+              ) : (
+                <span className="text-4xl font-bold text-white">{formData.name?.charAt(0)}</span>
+              )}
+              <button
+                type="button"
+                className="absolute bottom-2 right-2 bg-secondary p-2 rounded-full shadow-lg hover:bg-secondary/80 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+                title="Upload profile image"
+              >
+                <span className="material-symbols-outlined text-white">photo_camera</span>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
             </div>
-
-            {/* Insurance details */}
-            <div className="glass-card rounded-xl p-unit-6 relative overflow-hidden">
-              <h4 className="font-headline-md text-[18px] text-white font-semibold mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">receipt_long</span>
-                Insurance Coverage
-              </h4>
-              <div className="space-y-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Provider</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.insuranceProvider}
-                    onChange={(e) => setFormData({...formData, insuranceProvider: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Policy / Card Number</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.policyNumber}
-                    onChange={(e) => setFormData({...formData, policyNumber: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Group Code</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.groupNumber}
-                    onChange={(e) => setFormData({...formData, groupNumber: e.target.value})}
-                  />
-                </div>
-              </div>
+            <div className="flex flex-col items-center mb-2">
+              <span className="font-headline-md text-white text-lg font-semibold">{formData.name || 'Patient Name'}</span>
+              <span className="text-on-surface-variant text-xs mt-1">Patient ID: {patientId || 'N/A'}</span>
+            </div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs px-2 py-1 rounded bg-green-700/30 text-green-300 font-label-md">Portal Access</span>
+              <span className="material-symbols-outlined text-[#00e6d2] text-base" title="HIPAA Compliant">verified_user</span>
+              <span className="text-xs text-[#00e6d2] font-label-md">HIPAA</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="text-on-surface-variant text-xs mb-1">Primary Clinic</span>
+              <span className="font-label-md text-white text-sm">{formData.primary_clinic || 'N/A'}</span>
             </div>
           </div>
 
-          {/* Right Columns - Forms */}
-          <div className="lg:col-span-2 space-y-unit-6">
-            {/* Demographics details */}
-            <div className="glass-card rounded-xl p-unit-6">
-              <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-tertiary">badge</span>
-                Personal Demographics
-              </h4>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Full Legal Name</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Date of Birth</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    type="date"
-                    value={formData.dob}
-                    onChange={(e) => setFormData({...formData, dob: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Biological Gender</label>
-                  <select 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.gender}
-                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                  >
-                    <option>Female</option>
-                    <option>Male</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Blood Type</label>
-                  <select 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.bloodType}
-                    onChange={(e) => setFormData({...formData, bloodType: e.target.value})}
-                  >
-                    <option>O+</option>
-                    <option>O-</option>
-                    <option>A+</option>
-                    <option>A-</option>
-                    <option>B+</option>
-                    <option>B-</option>
-                    <option>AB+</option>
-                    <option>AB-</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {/* Contact details */}
-            <div className="glass-card rounded-xl p-unit-6">
-              <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">contacts</span>
-                Contact Information
-              </h4>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Phone Number</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Email Address</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
-                </div>
-              </div>
-
+          {/* Insurance Coverage Card (unchanged) */}
+          <div className="glass-card rounded-xl p-unit-6 relative overflow-hidden">
+            <h4 className="font-headline-md text-[18px] text-white font-semibold mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">receipt_long</span>
+              Insurance Coverage
+            </h4>
+            <div className="space-y-4">
               <div>
-                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Residential Address</label>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Provider</label>
                 <input 
                   className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  name="insurance_provider"
+                  value={formData.insurance_provider}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Policy / Card Number</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="policy_number"
+                  value={formData.policy_number}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Group Code</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="group_code"
+                  value={formData.group_code}
+                  onChange={handleChange}
                 />
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Emergency contacts details */}
-            <div className="glass-card rounded-xl p-unit-6">
-              <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-error">emergency</span>
-                Emergency Contacts
-              </h4>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Contact Name</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.emergencyContact}
-                    onChange={(e) => setFormData({...formData, emergencyContact: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Relationship</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.emergencyRelation}
-                    onChange={(e) => setFormData({...formData, emergencyRelation: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Contact Phone</label>
-                  <input 
-                    className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
-                    value={formData.emergencyPhone}
-                    onChange={(e) => setFormData({...formData, emergencyPhone: e.target.value})}
-                  />
-                </div>
+        {/* Right Columns - Forms */}
+        <div className="lg:col-span-2 space-y-unit-6">
+          {/* Demographics details */}
+          <div className="glass-card rounded-xl p-unit-6">
+            <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-tertiary">badge</span>
+              Personal Demographics
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Full Legal Name</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Age</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  type="number"
+                  name="age"
+                  value={formData.age}
+                  onChange={handleChange}
+                />
               </div>
             </div>
-
-            {/* Save Buttons */}
-            <div className="flex justify-end gap-4">
-              <button 
-                type="button"
-                className="px-6 py-3 bg-surface-container border border-white/10 text-on-surface hover:bg-white/5 rounded-lg font-label-md transition-colors"
-                onClick={() => window.location.reload()}
-              >
-                Reset Form
-              </button>
-              <button 
-                type="submit"
-                disabled={saving}
-                className={`px-8 py-3 bg-secondary-container hover:bg-[#7222da] text-white font-headline-md font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2 ${saving ? 'opacity-80 cursor-not-allowed' : ''}`}
-              >
-                {saving ? (
-                  <>
-                    <span className="material-symbols-outlined animate-spin text-[18px]">refresh</span>
-                    Saving Profile...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-[18px]">save</span>
-                    Save Profile Changes
-                  </>
-                )}
-              </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Biological Gender</label>
+                <select 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleChange}
+                >
+                  <option>Female</option>
+                  <option>Male</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Blood Type</label>
+                <select 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="blood_group"
+                  value={formData.blood_group}
+                  onChange={handleChange}
+                >
+                  <option>O+</option>
+                  <option>O-</option>
+                  <option>A+</option>
+                  <option>A-</option>
+                  <option>B+</option>
+                  <option>B-</option>
+                  <option>AB+</option>
+                  <option>AB-</option>
+                </select>
+              </div>
             </div>
           </div>
-        </form>
+
+          {/* Contact details */}
+          <div className="glass-card rounded-xl p-unit-6">
+            <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary">contacts</span>
+              Contact Information
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Phone Number</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Email Address</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="email"
+                  value={formData.email || ''}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Residential Address</label>
+              <input 
+                className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Emergency contacts details */}
+          <div className="glass-card rounded-xl p-unit-6">
+            <h4 className="font-headline-md text-[18px] text-white font-semibold mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-error">emergency</span>
+              Emergency Contacts
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Contact Name</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="emergency_contact_name"
+                  value={formData.emergency_contact_name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Relationship</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="emergency_contact_relationship"
+                  value={formData.emergency_contact_relationship}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="block font-label-md text-on-surface-variant text-[10px] uppercase mb-1">Contact Phone</label>
+                <input 
+                  className="input-glass w-full rounded-lg px-3 py-2 text-on-surface text-[14px] outline-none" 
+                  name="emergency_contact_phone"
+                  value={formData.emergency_contact_phone}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Save Buttons */}
+          <div className="flex justify-end gap-4">
+            <button 
+              type="button"
+              className="px-6 py-3 bg-surface-container border border-white/10 text-on-surface hover:bg-white/5 rounded-lg font-label-md transition-colors"
+              onClick={() => window.location.reload()}
+            >
+              Reset Form
+            </button>
+            <button 
+              type="submit"
+              disabled={saving}
+              className={`px-8 py-3 bg-secondary-container hover:bg-[#7222da] text-white font-headline-md font-semibold rounded-lg shadow-lg transition-colors flex items-center gap-2 ${saving ? 'opacity-80 cursor-not-allowed' : ''}`}
+            >
+              {saving ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-[18px]">refresh</span>
+                  Saving Profile...
+                </>
+              ) : (
+                <>
+                  <span className="material-symbols-outlined text-[18px]">save</span>
+                  Save Profile Changes
+                </>
+              )}
+              {success && <span className="ml-4 text-green-400 font-label-md">{success}</span>}
+              {error && <span className="ml-4 text-red-400 font-label-md">{error}</span>}
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </form>
   )
 }

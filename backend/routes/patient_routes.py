@@ -1,4 +1,3 @@
-# routes/patient_routes.py
 
 from fastapi import (
     APIRouter,
@@ -8,41 +7,29 @@ from fastapi import (
     UploadFile,
     File
 )
-
 from sqlalchemy.orm import Session
-
 from schemas.patient_schema import (
     PatientCreate,
     PatientUpdate,
     PatientResponse
 )
-
 from services.patient_service import (
     create_patient_profile,
     get_patient_profile,
     update_patient_profile,
     delete_patient_profile,
-    upload_profile_image
+    upload_profile_image,
+    get_patient_by_user_id
 )
-
-
-
 from database.db import get_db
 from utils.auth_middleware import get_current_user
 from utils.role_checker import require_role
 
-router = APIRouter(
-    prefix="/patient",
-    tags=["Patient"]
-)
-
 
 router = APIRouter(
     prefix="/patient",
     tags=["Patient"]
 )
-
-
 
 # Allow only patient users
 def patient_only(
@@ -50,6 +37,21 @@ def patient_only(
 ):
     require_role(["patient"])(current_user)
     return current_user
+
+# Get current patient profile
+@router.get(
+    "/me",
+    response_model=PatientResponse
+)
+def get_my_patient_profile(
+    db: Session = Depends(get_db),
+    current_user=Depends(patient_only)
+):
+    """
+    Get the current authenticated patient's profile.
+    """
+    patient = get_patient_by_user_id(db, current_user.id)
+    return patient
 
 
 # Upload profile image
@@ -106,10 +108,18 @@ def get_dashboard(
     recent_health_records = [
         HealthRecordSummary(
             id=hr.id,
-            created_at=hr.created_at,
-            summary=getattr(hr, "summary", None)
+            blood_sugar=hr.blood_sugar,
+            blood_pressure=hr.blood_pressure,
+            heart_rate=hr.heart_rate,
+            bmi=hr.bmi,
+            weight=hr.weight,
+            notes=hr.notes if hasattr(hr, "notes") else None,
+            recorded_at=hr.recorded_at,
+            created_at=hr.created_at if hr.created_at else hr.recorded_at
         ) for hr in data["recent_health_records"]
     ]
+
+    print("Recent Health Records (serialised):", [r.model_dump() for r in recent_health_records])
 
     return PatientDashboardResponse(
         patient_name=data["patient_name"],
@@ -158,13 +168,13 @@ def update_profile(
     db: Session = Depends(get_db),
     current_user=Depends(patient_only)
 ):
-
-    return update_patient_profile(
-        db,
-        patient_id,
-        current_user.id,
-        update_data
-    )
+    patient = get_patient_profile(db, patient_id)
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+    if patient.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this profile")
+    updated = update_patient_profile(db, patient_id, update_data)
+    return updated
 
 
 # Delete profile

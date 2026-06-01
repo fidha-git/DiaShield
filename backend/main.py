@@ -1,5 +1,9 @@
-﻿from fastapi import FastAPI
+﻿
+from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+
+from fastapi.staticfiles import StaticFiles
+import os
 
 from database.db import Base, engine
 
@@ -79,9 +83,6 @@ from routes.prediction_history_routes import (
 Base.metadata.create_all(bind=engine)
 
 
-# ==========================================
-# FastAPI app
-# ==========================================
 
 app = FastAPI(
     title="DiaShield API",
@@ -89,6 +90,12 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
+)
+os.makedirs("uploads/profile_images", exist_ok=True)
+app.mount(
+    "/uploads",
+    StaticFiles(directory="uploads"),
+    name="uploads"
 )
 
 # ==========================================
@@ -101,7 +108,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://127.0.0.1:3000"
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -148,6 +157,7 @@ app.openapi = custom_openapi
 
 
 # ==========================================
+
 # Register Routes
 # ==========================================
 
@@ -180,7 +190,6 @@ app.include_router(
     tags=["Patient"]
 )
 
-
 app.include_router(
     medical_history_router,
     tags=["Medical History"]
@@ -199,6 +208,10 @@ app.include_router(
     prediction_history_router,
     tags=["Prediction History"]
 )
+
+# Register analytics routes
+from routes.analytics_routes import router as analytics_router
+app.include_router(analytics_router)
 
 
 # ==========================================

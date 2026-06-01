@@ -15,10 +15,17 @@ from datetime import datetime
 
 
 
+
 class HealthRecordSummary(BaseModel):
     id: int
-    created_at: datetime
-    summary: Optional[str] = None
+    blood_sugar: Optional[str] = None
+    blood_pressure: Optional[str] = None
+    heart_rate: Optional[str] = None
+    bmi: Optional[str] = None
+    weight: Optional[str] = None
+    notes: Optional[str] = None
+    recorded_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

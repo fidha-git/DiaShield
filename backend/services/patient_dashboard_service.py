@@ -53,6 +53,20 @@ def get_patient_dashboard_data(db: Session, user_id: int):
     # Fetch latest 5 health records (linked by patient_id, ordered by recorded_at)
     recent_health_records = db.query(HealthRecord).filter(HealthRecord.patient_id == patient.id).order_by(HealthRecord.recorded_at.desc()).limit(5).all() or []
 
+    print("Recent Health Records from DB:", [
+        {
+            "id": hr.id,
+            "blood_sugar": hr.blood_sugar,
+            "blood_pressure": hr.blood_pressure,
+            "heart_rate": hr.heart_rate,
+            "bmi": hr.bmi,
+            "weight": hr.weight,
+            "recorded_at": str(hr.recorded_at),
+            "created_at": str(hr.created_at),
+        }
+        for hr in recent_health_records
+    ])
+
     return {
         "patient_name": patient_name,
         "upcoming_appointments_count": appointments_count,

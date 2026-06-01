@@ -1,9 +1,19 @@
-# Fix imports for upload_profile_image
+
 from sqlalchemy.orm import Session
-from fastapi import UploadFile, HTTPException
+from fastapi import HTTPException, status, UploadFile
 import os
 import uuid
-# ...existing code...
+from models.patient_model import Patient
+
+# Utility: Get patient by user_id
+def get_patient_by_user_id(db: Session, user_id: int):
+    patient = db.query(Patient).filter(Patient.user_id == user_id).first()
+    if not patient:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patient profile not found"
+        )
+    return patient
 
 # Upload profile image
 async def upload_profile_image(db: Session, user_id: int, file: UploadFile):
@@ -35,13 +45,21 @@ async def upload_profile_image(db: Session, user_id: int, file: UploadFile):
     with open(file_path, "wb") as f:
         f.write(contents)
 
-    # Store path in patient.profile_image
-    patient.profile_image = file_path.replace("\\", "/")
+    # Log the saved file path
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    logging.info(f"Saved profile image to: {os.path.abspath(file_path)}")
+
+    # Store relative path for database and API (always use forward slashes)
+    relative_path = file_path.replace("\\", "/")
+    patient.profile_image = relative_path
     db.commit()
 
+    # Return API path for frontend usage
+    api_path = f"/uploads/profile_images/{filename}"
     return {
         "message": "Profile image uploaded successfully",
-        "image_url": patient.profile_image
+        "image_url": api_path
     }
 # services/patient_service.py
 
@@ -112,43 +130,39 @@ def get_patient_profile(
     return patient
 
 
+def create_patient_profile(
+    db: Session,
+    user_id: int,
+    patient_data: PatientCreate
+):
+    existing_patient = db.query(Patient).filter(Patient.user_id == user_id).first()
+    if existing_patient:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Patient profile already exists"
+        )
+    patient = Patient(
+        user_id=user_id,
+        **patient_data.model_dump()
+    )
+    db.add(patient)
+    db.commit()
+    db.refresh(patient)
+    return patient
+
 # Update patient profile
 def update_patient_profile(
     db: Session,
     patient_id: int,
-    user_id: int,
-    update_data: PatientUpdate
+    update_data
 ):
-
-    patient = db.query(
-        Patient
-    ).filter(
-        Patient.id == patient_id
-    ).first()
-
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Patient profile not found"
-        )
-
-    # Allow only owner of profile
-    if patient.user_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to update profile"
-        )
-
-    update_fields = update_data.model_dump(
-        exclude_unset=True
-    )
-
-    for field, value in update_fields.items():
+        raise HTTPException(status_code=404, detail="Patient not found")
+    for field, value in update_data.model_dump(exclude_unset=True).items():
         setattr(patient, field, value)
-
     db.commit()
     db.refresh(patient)
-
     return patient
 
 
