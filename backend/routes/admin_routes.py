@@ -18,12 +18,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.db import get_db
 
 from utils.auth_middleware import get_current_user
-from utils.role_checker import RoleChecker
+from utils.role_middleware import require_role
 
 from models.admin_model import Admin
 from models.user_model import User
 from models.doctor_model import Doctor
-from models.prediction_model import Prediction
+from models.prediction_history_model import PredictionHistory
 from models.appointment_model import Appointment
 
 from schemas.admin_schema import (
@@ -53,7 +53,7 @@ router = APIRouter(
 # Role Protection
 # ==========================================
 
-admin_only = RoleChecker(["admin"])
+admin_only = require_role(["admin"])
 
 
 # ==========================================
@@ -253,7 +253,7 @@ def get_all_predictions(
     db: Session = Depends(get_db)
 ):
 
-    return db.query(Prediction).all()
+    return db.query(PredictionHistory).all()
 
 
 # ==========================================

@@ -37,7 +37,8 @@ export default function Login() {
         localStorage.setItem("token", response.data.access_token);
         localStorage.setItem("role", response.data.role);
         localStorage.setItem("username", response.data.username);
-        navigate("/dashboard");
+        const role = response.data.role;
+        navigate(role === "admin" ? "/admin" : role === "doctor" ? "/doctor" : "/dashboard");
       } else {
         setErrorMsg("Invalid login response: missing token");
       }

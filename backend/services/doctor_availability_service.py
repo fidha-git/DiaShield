@@ -48,3 +48,37 @@ def get_slots(
     ).filter(
         DoctorAvailability.doctor_id == doctor_id
     ).all()
+
+
+def update_slot(
+    slot_id: int,
+    data: DoctorAvailabilityCreate,
+    db: Session
+):
+    slot = db.query(DoctorAvailability).filter(DoctorAvailability.id == slot_id).first()
+    if not slot:
+        raise HTTPException(status_code=404, detail="Slot not found")
+    if slot.is_booked:
+        raise HTTPException(status_code=400, detail="Cannot edit a booked slot")
+
+    slot.date = data.date
+    slot.start_time = data.start_time
+    slot.end_time = data.end_time
+    db.commit()
+    db.refresh(slot)
+    return slot
+
+
+def delete_slot(
+    slot_id: int,
+    db: Session
+):
+    slot = db.query(DoctorAvailability).filter(DoctorAvailability.id == slot_id).first()
+    if not slot:
+        raise HTTPException(status_code=404, detail="Slot not found")
+    if slot.is_booked:
+        raise HTTPException(status_code=400, detail="Cannot delete a booked slot")
+
+    db.delete(slot)
+    db.commit()
+    return {"message": "Slot deleted successfully"}

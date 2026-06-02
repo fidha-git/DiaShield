@@ -2,7 +2,8 @@
 API routes for Prescriptions in DiaShield.
 """
 
-from fastapi import APIRouter, Depends, status
+import traceback
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from schemas.prescription_schema import (
@@ -15,11 +16,12 @@ from services.prescription_service import (
     create_prescription,
     get_prescription,
     update_prescription,
-    delete_prescription
+    delete_prescription,
+    get_doctor_prescriptions
 )
 
 from utils.auth_middleware import get_current_user
-from utils.role_checker import require_role
+from utils.role_middleware import require_role
 from database.db import get_db
 
 
@@ -51,6 +53,38 @@ async def add_prescription(
         user_id,
         data
     )
+
+
+@router.get(
+    "/doctor/all",
+    response_model=list[PrescriptionResponse]
+)
+async def read_doctor_prescriptions(
+    db: Session = Depends(get_db),
+    current_user=Depends(get_current_user),
+    _: None = Depends(require_role(["doctor"]))
+):
+    """Get all prescriptions for the logged-in doctor"""
+    try:
+        print("[PRESCRIPTIONS] GET /doctor/all — starting")
+        print(f"[PRESCRIPTIONS] current_user.id={current_user.id}, role={current_user.role}")
+
+        user_id = current_user.id
+
+        result = get_doctor_prescriptions(
+            db,
+            user_id
+        )
+
+        print(f"[PRESCRIPTIONS] get_doctor_prescriptions returned {len(result) if result else 0} items")
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[PRESCRIPTIONS] UNHANDLED ERROR: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
 @router.get(

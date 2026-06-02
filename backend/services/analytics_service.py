@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models.user_model import User
 from models.appointment_model import Appointment
-from models.prediction_model import Prediction
+from models.prediction_history_model import PredictionHistory
 
 # Analytics service for admin dashboard
 
@@ -23,7 +23,7 @@ def get_analytics_data(db: Session):
     booked_appointments = db.query(Appointment).filter(Appointment.status == "booked").count()
 
     # Count predictions
-    total_predictions = db.query(Prediction).count()
+    total_predictions = db.query(PredictionHistory).count()
 
     return {
         "total_users": total_users,

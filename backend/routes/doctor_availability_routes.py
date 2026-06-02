@@ -10,7 +10,9 @@ from schemas.doctor_availability_schema import (
 
 from services.doctor_availability_service import (
     add_slot,
-    get_slots
+    get_slots,
+    update_slot,
+    delete_slot
 )
 
 router = APIRouter(
@@ -46,3 +48,25 @@ def get_doctor_slots(
         doctor_id,
         db
     )
+
+
+@router.put(
+    "/slot/{slot_id}",
+    response_model=DoctorAvailabilityResponse
+)
+def edit_slot(
+    slot_id: int,
+    data: DoctorAvailabilityCreate,
+    db: Session = Depends(get_db)
+):
+    return update_slot(slot_id, data, db)
+
+
+@router.delete(
+    "/slot/{slot_id}"
+)
+def remove_slot(
+    slot_id: int,
+    db: Session = Depends(get_db)
+):
+    return delete_slot(slot_id, db)

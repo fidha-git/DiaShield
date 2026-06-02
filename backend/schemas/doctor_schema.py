@@ -50,6 +50,16 @@ class DoctorCreate(BaseModel):
         example="Experienced diabetes specialist"
     )
 
+    email: Optional[str] = Field(
+        None,
+        example="dr.john@hospital.com"
+    )
+
+    password: Optional[str] = Field(
+        None,
+        example="securePassword123"
+    )
+
     model_config = {
         "from_attributes": True
     }

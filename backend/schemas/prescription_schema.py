@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class PrescriptionCreate(BaseModel):
     medicines: str
     dosage: str
+    frequency: Optional[str] = None
     duration: str
     instructions: Optional[str] = None
 
@@ -18,6 +19,7 @@ class PrescriptionCreate(BaseModel):
 class PrescriptionUpdate(BaseModel):
     medicines: Optional[str] = None
     dosage: Optional[str] = None
+    frequency: Optional[str] = None
     duration: Optional[str] = None
     instructions: Optional[str] = None
 
@@ -31,6 +33,7 @@ class PrescriptionResponse(BaseModel):
     doctor_id: int
     medicines: str
     dosage: str
+    frequency: Optional[str] = None
     duration: str
     instructions: Optional[str] = None
     created_at: datetime

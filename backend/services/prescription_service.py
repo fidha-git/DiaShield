@@ -28,6 +28,7 @@ def create_prescription(db: Session, appointment_id: int, user_id: int, data: Pr
         doctor_id=doctor.id,
         medicines=data.medicines,
         dosage=data.dosage,
+        frequency=data.frequency,
         duration=data.duration,
         instructions=data.instructions
     )
@@ -54,6 +55,18 @@ def update_prescription(db: Session, appointment_id: int, user_id: int, data: Pr
     db.commit()
     db.refresh(prescription)
     return prescription
+
+def get_doctor_prescriptions(db: Session, user_id: int):
+    print(f"[PRESCRIPTION_SERVICE] get_doctor_prescriptions called with user_id={user_id}")
+    doctor = db.query(Doctor).filter(Doctor.user_id == user_id).first()
+    print(f"[PRESCRIPTION_SERVICE] doctor lookup result: {doctor}")
+    if not doctor:
+        print(f"[PRESCRIPTION_SERVICE] No doctor found for user_id={user_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Doctor not found.")
+    print(f"[PRESCRIPTION_SERVICE] doctor.id={doctor.id}")
+    prescriptions = db.query(Prescription).filter(Prescription.doctor_id == doctor.id).all()
+    print(f"[PRESCRIPTION_SERVICE] Found {len(prescriptions)} prescriptions")
+    return prescriptions
 
 def delete_prescription(db: Session, appointment_id: int, user_id: int):
     prescription = db.query(Prescription).filter(Prescription.appointment_id == appointment_id).first()

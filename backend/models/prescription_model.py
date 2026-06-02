@@ -47,6 +47,11 @@ class Prescription(Base):
         nullable=False
     )
 
+    frequency = Column(
+        String,
+        nullable=True
+    )
+
     duration = Column(
         String,
         nullable=False

@@ -16,14 +16,15 @@ from services.doctor_service import (
     get_doctor,
     update_doctor,
     delete_doctor,
-    get_all_doctors
+    get_all_doctors,
+    get_doctor_by_user_id
 )
 
 from database.db import get_db
 from utils.auth_middleware import (
-    get_current_user,
-    require_role
+    get_current_user
 )
+from utils.role_middleware import require_role
 
 
 # Create router BEFORE decorators
@@ -55,19 +56,31 @@ def get_all_doctors_route(
 def create_doctor_profile(
     doctor_data: DoctorCreate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_role(["doctor", "admin"]))
 ):
     """
     Create doctor profile
     """
-
-    require_role(["doctor"])(current_user)
 
     return create_doctor(
         db=db,
         user_id=current_user.id,
         doctor_data=doctor_data
     )
+
+
+@router.get(
+    "/me",
+    response_model=DoctorResponse
+)
+def get_current_doctor(
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(["doctor"]))
+):
+    """
+    Get current doctor's own profile (from JWT token).
+    """
+    return get_doctor_by_user_id(db, current_user.id)
 
 
 @router.get(
@@ -96,19 +109,18 @@ def update_doctor_profile(
     doctor_id: int,
     doctor_data: DoctorUpdate,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_role(["doctor", "admin"]))
 ):
     """
     Update doctor profile
     """
 
-    require_role(["doctor"])(current_user)
-
     return update_doctor(
         db=db,
         doctor_id=doctor_id,
         user_id=current_user.id,
-        doctor_data=doctor_data
+        doctor_data=doctor_data,
+        current_user=current_user
     )
 
 
@@ -118,30 +130,15 @@ def update_doctor_profile(
 def delete_doctor_profile(
     doctor_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_user)
+    current_user=Depends(require_role(["doctor", "admin"]))
 ):
     """
     Delete doctor profile
     """
 
-    require_role(["doctor"])(current_user)
-
     return delete_doctor(
         db=db,
         doctor_id=doctor_id,
-        user_id=current_user.id
+        user_id=current_user.id,
+        current_user=current_user
     )
-
-
-@router.get(
-    "/all",
-    response_model=list[DoctorResponse],
-    status_code=status.HTTP_200_OK
-)
-def get_all_doctors_route(
-    db: Session = Depends(get_db)
-):
-    """
-    Get all doctors (public, no authentication required)
-    """
-    return get_all_doctors(db)

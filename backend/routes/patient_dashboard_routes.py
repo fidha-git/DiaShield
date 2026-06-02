@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from schemas.patient_dashboard_schema import PatientDashboardResponse, HealthRecordSummary
 from services.patient_dashboard_service import get_patient_dashboard_data
 from utils.auth_middleware import get_current_user
-from utils.role_checker import require_role
+from utils.role_middleware import require_role
 from database.db import get_db
 from typing import List
 
