@@ -5,9 +5,6 @@ export default function ProtectedRoute({ children }) {
   const location = useLocation();
   const token = localStorage.getItem("token");
 
-  console.log("Route:", location.pathname);
-  console.log("Token:", token);
-
   if (!token || token.trim() === "") {
     return <Navigate to="/login" replace />;
   }

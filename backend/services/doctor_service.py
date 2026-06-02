@@ -3,7 +3,11 @@ Service layer for Doctor profile management.
 Handles database operations for Doctor.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
@@ -33,7 +37,7 @@ def _create_user_for_doctor(db: Session, doctor_data: DoctorCreate) -> User:
         email=doctor_data.email,
         password=get_password_hash(doctor_data.password),
         role="doctor",
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
         is_active=True,
     )
     db.add(user)
@@ -142,6 +146,8 @@ def update_doctor(
     update_data = doctor_data.model_dump(
         exclude_unset=True
     )
+
+    logger.info("Doctor profile update: doctor_id=%s, fields=%s", doctor_id, list(update_data.keys()))
 
     for field, value in update_data.items():
         setattr(

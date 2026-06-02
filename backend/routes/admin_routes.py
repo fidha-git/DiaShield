@@ -223,7 +223,10 @@ def get_all_users(
     db: Session = Depends(get_db)
 ):
 
-    return db.query(User).all()
+    return db.query(User).with_entities(
+        User.id, User.email, User.username, User.role,
+        User.created_at, User.is_active, User.profile_image
+    ).all()
 
 
 # ==========================================

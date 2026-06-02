@@ -77,6 +77,11 @@ class Doctor(Base):
         nullable=True
     )
 
+    profile_image = Column(
+        String(500),
+        nullable=True
+    )
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now()

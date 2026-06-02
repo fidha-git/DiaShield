@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 const MENU_ITEMS = [
   { label: 'Dashboard',       path: '/dashboard',    icon: 'dashboard' },
   { label: 'Profile',         path: '/profile',      icon: 'person' },
-  { label: 'Medical History', path: '/history',      icon: 'history' },
+  { label: 'Health Timeline',  path: '/history',      icon: 'timeline' },
   { label: 'Health Records',  path: '/records',      icon: 'description' },
   { label: 'Predictions',     path: '/prediction',   icon: 'query_stats' },
   { label: 'Appointments',    path: '/appointments', icon: 'calendar_today' },
@@ -42,8 +42,7 @@ export default function SearchBar({ placeholder = 'Search records, appointments.
   }
 
   function handleSelect(item) {
-    console.log(`Navigating to /history → ${item.path} (${item.label})`);
-    navigate(item.path);
+navigate(item.path);
     setQuery('');
     setOpen(false);
   }
@@ -65,7 +64,7 @@ export default function SearchBar({ placeholder = 'Search records, appointments.
   return (
     <div ref={wrapperRef} className="relative w-full md:w-64">
       {/* Search icon */}
-      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none select-none">
+      <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none select-none">
         search
       </span>
 
@@ -76,14 +75,14 @@ export default function SearchBar({ placeholder = 'Search records, appointments.
         onKeyDown={handleKeyDown}
         onFocus={() => query.trim() && setOpen(true)}
         placeholder={placeholder}
-        className="w-full bg-surface-container-high border border-white/10 rounded-lg pl-10 pr-8 py-2 text-body-sm text-on-surface focus:outline-none focus:border-tertiary focus:ring-1 focus:ring-tertiary transition-all placeholder:text-on-surface-variant/50 outline-none"
+        className="w-full bg-white border border-sky-100 rounded-lg pl-10 pr-8 py-2 text-sm text-slate-900 focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all placeholder:text-slate-400 outline-none shadow-sm"
       />
 
       {/* Clear button */}
       {query && (
         <button
           onClick={handleClear}
-          className="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 transition-colors"
           tabIndex={-1}
           aria-label="Clear search"
         >
@@ -93,16 +92,16 @@ export default function SearchBar({ placeholder = 'Search records, appointments.
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-2 w-full rounded-xl overflow-hidden shadow-xl border border-white/10 bg-[#0A122F]">
+        <div className="absolute z-50 mt-2 w-full rounded-xl overflow-hidden shadow-lg border border-sky-100 bg-white">
           {results.length > 0 ? (
             <ul>
               {results.map(item => (
                 <li key={item.path}>
                   <button
                     onMouseDown={() => handleSelect(item)}
-                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-white hover:bg-cyan-500/20 hover:text-cyan-400 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 hover:bg-sky-50 hover:text-sky-600 transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-cyan-400/70">
+                    <span className="material-symbols-outlined text-[18px] text-sky-500">
                       {item.icon}
                     </span>
                     {item.label}
@@ -111,7 +110,7 @@ export default function SearchBar({ placeholder = 'Search records, appointments.
               ))}
             </ul>
           ) : (
-            <div className="px-4 py-3 text-sm text-gray-400">No results found</div>
+            <div className="px-4 py-3 text-sm text-slate-400">No results found</div>
           )}
         </div>
       )}

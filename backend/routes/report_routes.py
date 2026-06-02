@@ -79,7 +79,7 @@ def generate_pdf_report(db: Session = Depends(get_db), current_user: User = Depe
     p.setFont("Helvetica", 10)
     if health_history:
         for health in health_history:
-            p.drawString(60, y, f"Date: {health.created_at.strftime('%Y-%m-%d %H:%M:%S')} | Data: {getattr(health, 'data', 'N/A')}")
+            p.drawString(60, y, f"Date: {health.created_at.strftime('%Y-%m-%d %H:%M:%S')} | Blood Sugar: {health.blood_sugar} | Weight: {health.weight}kg | Exercise: {health.exercise_minutes}min")
             y -= 15
             if y < 60:
                 p.showPage(); y = height - 40
@@ -95,7 +95,7 @@ def generate_pdf_report(db: Session = Depends(get_db), current_user: User = Depe
     p.setFont("Helvetica", 10)
     if appointments:
         for appt in appointments:
-            p.drawString(60, y, f"Doctor: {appt.doctor_name} | Date: {appt.appointment_date.strftime('%Y-%m-%d %H:%M:%S')} | Status: {appt.status}")
+            p.drawString(60, y, f"Doctor ID: {appt.doctor_id} | Date: {appt.created_at.strftime('%Y-%m-%d %H:%M:%S')} | Status: {appt.status}")
             y -= 15
             if y < 60:
                 p.showPage(); y = height - 40
@@ -111,7 +111,7 @@ def generate_pdf_report(db: Session = Depends(get_db), current_user: User = Depe
     p.setFont("Helvetica", 10)
     if reminders:
         for rem in reminders:
-            p.drawString(60, y, f"Reminder: {getattr(rem, 'reminder_text', 'N/A')} | Date: {rem.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            p.drawString(60, y, f"Reminder: {rem.message} | Date: {rem.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
             y -= 15
             if y < 60:
                 p.showPage(); y = height - 40

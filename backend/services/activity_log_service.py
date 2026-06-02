@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from models.activity_log_model import ActivityLog
 from models.user_model import User
-from datetime import datetime
+from datetime import datetime, timezone
 
 def log_activity(db: Session, user_id: int, action: str):
     """
     Helper to log user activity.
     """
-    log = ActivityLog(user_id=user_id, action=action, created_at=datetime.utcnow())
+    log = ActivityLog(user_id=user_id, action=action, created_at=datetime.now(timezone.utc))
     db.add(log)
     db.commit()
     db.refresh(log)

@@ -7,7 +7,7 @@ from models.chat_model import Chat
 from database.db import get_db
 from utils.auth_middleware import get_current_user
 from models.user_model import User
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List
 
 router = APIRouter()
@@ -44,7 +44,7 @@ def chat(
         user_id=current_user.id,
         message=chat.message,
         response=ai_response,
-        created_at=datetime.utcnow()
+        created_at=datetime.now(timezone.utc)
     )
     db.add(new_chat)
     db.commit()

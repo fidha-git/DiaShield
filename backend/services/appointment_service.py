@@ -252,8 +252,24 @@ def get_doctor_appointments(
 ):
     offset = (page - 1) * limit
 
+    from models.user_model import User
+    from models.doctor_availability_model import DoctorAvailability
+
     query = db.query(
-        Appointment
+        Appointment.id,
+        Appointment.user_id,
+        Appointment.doctor_id,
+        Appointment.slot_id,
+        Appointment.status,
+        Appointment.created_at,
+        DoctorAvailability.date,
+        DoctorAvailability.start_time,
+        DoctorAvailability.end_time,
+        User.username.label("patient_name")
+    ).join(
+        User, Appointment.user_id == User.id
+    ).join(
+        DoctorAvailability, Appointment.slot_id == DoctorAvailability.id
     ).filter(
         Appointment.doctor_id == doctor_id
     )
@@ -273,12 +289,29 @@ def get_doctor_appointments(
 
     total_pages = (total + limit - 1) // limit if limit else 1
 
+    # Convert to dicts for API response
+    enriched = [
+        {
+            "id": a.id,
+            "user_id": a.user_id,
+            "doctor_id": a.doctor_id,
+            "slot_id": a.slot_id,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "date": a.date.isoformat() if a.date else None,
+            "start_time": a.start_time.isoformat() if a.start_time else None,
+            "end_time": a.end_time.isoformat() if a.end_time else None,
+            "patient_name": a.patient_name
+        }
+        for a in appointments
+    ]
+
     return {
         "page": page,
         "limit": limit,
         "total": total,
         "total_pages": total_pages,
-        "appointments": appointments
+        "appointments": enriched
     }
 
 
@@ -415,11 +448,29 @@ def get_doctor_dashboard(
     db: Session,
     doctor_id: int
 ):
-    appointments = db.query(
-        Appointment
+    from models.user_model import User
+    from models.doctor_availability_model import DoctorAvailability
+
+    appointments_query = db.query(
+        Appointment.id,
+        Appointment.user_id,
+        Appointment.doctor_id,
+        Appointment.slot_id,
+        Appointment.status,
+        Appointment.created_at,
+        DoctorAvailability.date,
+        DoctorAvailability.start_time,
+        DoctorAvailability.end_time,
+        User.username.label("patient_name")
+    ).join(
+        User, Appointment.user_id == User.id
+    ).join(
+        DoctorAvailability, Appointment.slot_id == DoctorAvailability.id
     ).filter(
         Appointment.doctor_id == doctor_id
-    ).all()
+    )
+
+    appointments = appointments_query.all()
 
     total = len(appointments)
 
@@ -435,11 +486,27 @@ def get_doctor_dashboard(
         1 for a in appointments if a.status == "cancelled"
     )
 
+    enriched = [
+        {
+            "id": a.id,
+            "user_id": a.user_id,
+            "doctor_id": a.doctor_id,
+            "slot_id": a.slot_id,
+            "status": a.status,
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "date": a.date.isoformat() if a.date else None,
+            "start_time": a.start_time.isoformat() if a.start_time else None,
+            "end_time": a.end_time.isoformat() if a.end_time else None,
+            "patient_name": a.patient_name
+        }
+        for a in appointments
+    ]
+
     return {
         "doctor_id": doctor_id,
         "total_appointments": total,
         "booked_appointments": booked,
         "completed_appointments": completed,
         "cancelled_appointments": cancelled,
-        "appointments": appointments
+        "appointments": enriched
     }

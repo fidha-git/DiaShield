@@ -53,3 +53,11 @@ export const updatePrescription = (appointmentId, data) =>
 
 export const deletePrescription = (appointmentId) =>
   API.delete(`/prescriptions/delete/${appointmentId}`);
+
+export const uploadDoctorProfileImage = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  return API.post("/doctor/profile/upload-image", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};

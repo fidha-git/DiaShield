@@ -1,5 +1,6 @@
 import React from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import ThemeToggle from "./ThemeToggle";
 
 const sidebarLinks = [
   { path: "/doctor", label: "Dashboard", icon: "dashboard" },
@@ -15,37 +16,37 @@ export default function DoctorLayout() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#020B2D] text-white flex">
-      <div className="w-[280px] bg-[#0A122F]/90 backdrop-blur-xl border-r border-white/10 flex flex-col p-6">
+    <div className="portal-shell">
+      <div className="portal-sidebar w-[280px] flex flex-col p-6">
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-            <span className="material-symbols-outlined">stethoscope</span>
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <span className="material-symbols-outlined text-white text-2xl">stethoscope</span>
           </div>
           <div>
-            <h1 className="text-cyan-400 text-2xl font-bold">DiaShield</h1>
-            <p className="text-gray-400 text-sm">Doctor Portal</p>
+            <h1 className="text-sky-600 dark:text-sky-400 text-2xl font-bold tracking-tight">DiaShield</h1>
+            <p className="text-slate-400 dark:text-slate-500 text-[11px] font-medium uppercase tracking-wider">Doctor Portal</p>
           </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1">
           {sidebarLinks.map((link) => (
             <NavLink
               key={link.path}
               to={link.path}
-              end={link.path === "/doctor"}
-              className={({ isActive }) =>
-                isActive
-                  ? "flex items-center gap-3 p-3 rounded-xl bg-cyan-500/20 text-cyan-400 transition-all"
-                  : "flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-gray-300 transition-all"
-              }
+              end
+              className={({ isActive }) => {
+                return isActive
+                  ? "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 font-semibold transition-all shadow-md shadow-sky-500/5 border border-sky-100 dark:border-slate-700/50"
+                  : "flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/30 hover:text-slate-900 dark:hover:text-slate-100 transition-all";
+              }}
             >
-              <span className="material-symbols-outlined">{link.icon}</span>
-              <span>{link.label}</span>
+              <span className="material-symbols-outlined text-xl">{link.icon}</span>
+              <span className="text-sm">{link.label}</span>
             </NavLink>
           ))}
-          <div className="border-t border-white/10 my-4" />
+          <div className="border-t border-sky-100 dark:border-slate-800/80 my-4" />
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-gray-400 hover:bg-white/10"
+            className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-slate-400 dark:text-slate-500 hover:bg-sky-100/50 dark:hover:bg-slate-800/30 hover:text-slate-700 dark:hover:text-slate-300 transition-all mt-2"
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Back to Patient Portal
@@ -57,15 +58,22 @@ export default function DoctorLayout() {
               localStorage.removeItem("role");
               navigate("/login");
             }}
-            className="w-full flex items-center gap-3 p-3 mt-2 rounded-xl text-red-400 hover:bg-red-500/10"
+            className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors mt-2"
           >
             <span className="material-symbols-outlined">logout</span>
             Sign Out
           </button>
         </div>
       </div>
-      <main className="flex-1 p-6 overflow-auto">
-        <Outlet />
+      <main className="portal-main overflow-auto flex flex-col">
+        <div className="portal-topbar">
+          <ThemeToggle />
+        </div>
+        <div className="portal-content-wrap flex-1">
+          <div className="portal-page h-full">
+            <Outlet />
+          </div>
+        </div>
       </main>
     </div>
   );

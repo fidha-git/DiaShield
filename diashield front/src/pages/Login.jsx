@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import API from '../services/api'
+import { HealthcareArtwork } from '../components/Illustrations'
 
 export default function Login() {
 
@@ -29,8 +30,6 @@ export default function Login() {
           password: password.trim()
         }
       );
-
-      console.log("Login response:", response.data);
 
       // Save new login details
       if (response.data && response.data.access_token) {
@@ -61,181 +60,132 @@ export default function Login() {
   }
 
   return (
-
-    <div className="min-h-screen text-[#e4e2e4] font-body-md antialiased overflow-hidden selection:bg-[#4cd7f6]/30 selection:text-[#4cd7f6] flex items-center justify-center relative bg-[#0F172A]">
-
-      <div className="absolute inset-0 z-0 bg-medical-mesh pointer-events-none"></div>
-
-      <main className="relative z-10 w-full max-w-6xl mx-auto px-gutter md:px-unit-8 flex flex-col md:flex-row items-center justify-between gap-unit-12 h-[calc(100vh-4rem)] md:h-auto">
+    <div className="auth-shell text-slate-900 dark:text-slate-100 font-body-md antialiased overflow-hidden selection:bg-sky-500/30 selection:text-sky-600 flex items-center justify-center relative transition-colors duration-300">
+      
+      {/* Decorative floating blobs */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-sky-400/10 dark:bg-sky-500/5 rounded-full blur-3xl pointer-events-none animate-blob1" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-400/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none animate-blob2" />
+      
+      <main className="relative z-10 w-full max-w-6xl mx-auto px-6 md:px-8 flex flex-col md:flex-row items-center justify-between gap-12 py-8">
 
         {/* Left Healthcare Panel */}
-
-        <div className="hidden md:flex flex-col flex-1 max-w-xl h-[600px] relative rounded-2xl overflow-hidden border border-white/5 shadow-2xl">
-
-          <img
-            alt="Healthcare"
-            className="absolute inset-0 w-full h-full object-cover opacity-80"
-            src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1200"
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] via-transparent to-transparent"></div>
-
-          <div className="absolute bottom-0 left-0 p-8">
-
-            <h2 className="text-4xl font-bold text-white mb-4">
+        <div className="hidden md:flex flex-col flex-1 max-w-xl h-[600px] relative rounded-3xl overflow-hidden border border-sky-100 dark:border-slate-800 shadow-2xl transition-colors duration-300">
+          <HealthcareArtwork className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
+          <div className="absolute bottom-0 left-0 p-10 z-10">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-500/20 text-sky-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+              Intelligence
+            </span>
+            <h2 className="text-4xl font-extrabold text-white tracking-tight mb-4 leading-tight">
               Advanced Patient Intelligence
             </h2>
-
-            <p className="text-gray-300">
-              Securely access your medical history,
-              predictive analytics and personalized
-              health recommendations.
+            <p className="text-slate-300 leading-relaxed max-w-md">
+              Securely access your medical history, predictive analytics and personalized health recommendations in real-time.
             </p>
-
           </div>
-
         </div>
 
         {/* Login Form */}
-
-        <div className="w-full max-w-md">
-
-          <div className="glass-card rounded-xl p-8 shadow-2xl">
-
+        <div className="w-full max-w-md relative">
+          {/* Glass Card */}
+          <div className="auth-card backdrop-blur-xl p-8 transition-all duration-300">
+            
             <div className="mb-8">
-
-              <div className="flex items-center gap-2 mb-4">
-
-                <span className="material-symbols-outlined text-[#4cd7f6] text-4xl">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="material-symbols-outlined text-sky-500 dark:text-sky-400 text-4xl">
                   health_and_safety
                 </span>
-
-                <h1 className="text-3xl font-bold text-[#4cd7f6]">
+                <h1 className="text-3xl font-extrabold text-sky-600 dark:text-sky-400 tracking-tight">
                   DiaShield
                 </h1>
-
               </div>
-
-              <h3 className="text-2xl font-bold text-white">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 Welcome Back
               </h3>
-
-              <p className="text-gray-400">
+              <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">
                 Sign in to access your patient portal
               </p>
-
             </div>
 
             <form
               onSubmit={handleSubmit}
-              className="space-y-6"
+              className="space-y-5"
             >
-
               <div>
-
-                <label className="block mb-2 text-sm text-gray-400">
-                  Username or Email
+                <label className="block mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Email
                 </label>
-
                 <input
                   type="text"
                   required
                   value={username}
                   onChange={(e)=>setUsername(e.target.value)}
-                  className="w-full p-3 rounded-lg bg-black/30 border border-white/10 outline-none"
+                  className="input-premium"
                   placeholder="john@example.com"
                 />
-
               </div>
 
               <div>
-
-                <label className="block mb-2 text-sm text-gray-400">
+                <label className="block mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Password
                 </label>
-
                 <div className="relative">
-
                   <input
-                    type={
-                      showPassword
-                      ? "text"
-                      : "password"
-                    }
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e)=>setPassword(e.target.value)}
-                    className="w-full p-3 rounded-lg bg-black/30 border border-white/10 outline-none"
+                    className="input-premium pr-12"
                     placeholder="••••••••"
                   />
-
                   <button
                     type="button"
-                    onClick={()=>
-                      setShowPassword(
-                        !showPassword
-                      )
-                    }
-                    className="absolute right-4 top-3"
+                    onClick={()=>setShowPassword(!showPassword)}
+                    className="absolute right-4 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                   >
-                    {
-                      showPassword
-                      ? "Hide"
-                      : "Show"
-                    }
+                    {showPassword ? (
+                      <span className="material-symbols-outlined text-[20px]">visibility</span>
+                    ) : (
+                      <span className="material-symbols-outlined text-[20px]">visibility_off</span>
+                    )}
                   </button>
-
                 </div>
-
               </div>
 
               {errorMsg && (
-
-                <p className="text-red-400">
-                  {errorMsg}
-                </p>
-
+                <div className="text-sm text-red-500 flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-4 py-2.5 rounded-xl">
+                  <span className="material-symbols-outlined text-[18px]">error</span>
+                  <span>{errorMsg}</span>
+                </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-purple-600 hover:bg-purple-700 py-3 rounded-lg"
+                className="w-full btn-primary py-3.5 font-bold text-base mt-2 shadow-lg shadow-sky-500/20 dark:shadow-sky-500/10 cursor-pointer"
               >
-                {
-                  loading
-                  ? "Authenticating..."
-                  : "Sign In"
-                }
+                {loading ? "Authenticating..." : "Sign In"}
               </button>
 
             </form>
 
             <div className="mt-6 text-center">
-
-              <p className="text-gray-400">
-
+              <p className="text-sm text-slate-400 dark:text-slate-500">
                 New to DiaShield?
-
                 <Link
                   to="/register"
-                  className="text-[#4cd7f6] ml-2"
+                  className="text-sky-600 dark:text-sky-400 font-bold hover:underline ml-1.5 transition-all"
                 >
                   Create account
                 </Link>
-
               </p>
-
             </div>
 
           </div>
-
         </div>
 
       </main>
 
     </div>
-
   )
-
 }

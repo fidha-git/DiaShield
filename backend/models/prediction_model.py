@@ -35,4 +35,4 @@ class Prediction(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Optional relationship to the User model for convenient access
-    user = relationship("User", backref="predictions")
+    user = relationship("User", back_populates="predictions")

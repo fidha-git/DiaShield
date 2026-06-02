@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+﻿from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -73,7 +73,7 @@ def register_user(
             email=user.email,
             password=hashed_password,
             role=user.role,
-            created_at=datetime.utcnow()
+            created_at=datetime.now(timezone.utc)
         )
 
         db.add(new_user)
@@ -133,9 +133,9 @@ def login_user(
     db: Session = Depends(get_db)
 ):
 
-    # Find user
+    # Find user by email or username
     user = db.query(User).filter(
-        User.email == login_data.email
+        (User.email == login_data.email) | (User.username == login_data.email)
     ).first()
 
     if not user:
@@ -155,7 +155,7 @@ def login_user(
         )
 
     # Check blocked account
-    if not user.is_active:
+    if user.is_active is False:
         raise HTTPException(
             status_code=403,
             detail="Account is blocked. Contact admin."

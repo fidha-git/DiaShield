@@ -130,6 +130,12 @@ class User(Base):
         cascade="all, delete-orphan"
     )
 
+    predictions = relationship(
+        "Prediction",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
+
     doctor = relationship(
         "Doctor",
         back_populates="user",

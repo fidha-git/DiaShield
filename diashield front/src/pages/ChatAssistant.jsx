@@ -14,8 +14,7 @@ export default function ChatAssistant() {
       setError("");
       try {
         const data = await getChatHistory();
-        console.log("Chat History:", data);
-        // Expecting array of { message, response }
+// Expecting array of { message, response }
         const formatted = [];
         data.forEach((item, idx) => {
           if (item.message) {
@@ -76,8 +75,7 @@ export default function ChatAssistant() {
     setLoading(true);
     try {
       const res = await sendMessage(textToSend);
-      console.log("Chat Response:", res);
-      setMessages((prev) => [
+setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + 1,
@@ -93,26 +91,26 @@ export default function ChatAssistant() {
     }
   };
   return (
-    <div className="h-[calc(100vh-5rem)] md:h-screen flex flex-col relative bg-surface">
+    <div className="h-[calc(100vh-5rem)] md:h-screen flex flex-col relative transition-colors duration-300">
       {/* Header */}
-      <header className="bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex justify-between items-center px-gutter py-unit-4 w-full sticky top-0 z-40">
+      <header className="bg-white/90 dark:bg-[#0F172A]/90 backdrop-blur-xl border-b border-sky-100 dark:border-slate-800/80 shadow-sm flex justify-between items-center px-6 py-4 w-full sticky top-0 z-40">
         <div className="flex-1">
-          <span className="font-headline-md text-headline-md text-on-surface font-semibold flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse"></span>
+          <span className="font-headline-md text-headline-md text-slate-900 dark:text-slate-100 font-semibold flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
             AI Medical Assistant
           </span>
-          <span className="block font-label-md text-[10px] text-on-surface-variant uppercase tracking-wider">Endocrinology Support System</span>
+          <span className="block font-label-md text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider">Endocrinology Support System</span>
         </div>
         <button 
           onClick={() => alert('DiaShield Care System: Complete clinical AI chat protocols are active.')}
-          className="text-on-surface-variant hover:text-tertiary transition-colors duration-200"
+          className="text-slate-400 hover:text-sky-500 transition-colors duration-200 cursor-pointer"
         >
           <span className="material-symbols-outlined">help</span>
         </button>
       </header>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-gutter py-unit-6 space-y-6 pb-40">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 pb-40">
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -120,7 +118,7 @@ export default function ChatAssistant() {
           >
             {/* Avatar */}
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-white/5 ${msg.sender === "ai" ? "bg-primary-container text-tertiary" : "bg-secondary-container text-secondary"}`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-sky-100 dark:border-slate-800/80 ${msg.sender === "ai" ? "bg-sky-50 dark:bg-slate-800 text-sky-600 dark:text-sky-400" : "bg-sky-100 dark:bg-slate-900 text-slate-600 dark:text-slate-300"}`}
             >
               <span className="material-symbols-outlined text-[20px]">
                 {msg.sender === "ai" ? "smart_toy" : "person"}
@@ -129,26 +127,26 @@ export default function ChatAssistant() {
             {/* Bubble */}
             <div className={`flex flex-col ${msg.sender === "user" ? "items-end" : ""}`}>
               <div
-                className={`glass-card rounded-2xl p-unit-4 shadow-[0_4px_24px_rgba(0,0,0,0.2)] border border-white/5 ${msg.sender === "ai" ? "rounded-tl-none ring-1 ring-secondary-container/20" : "rounded-tr-none bg-[#7c3aed]/10 border-[#7c3aed]/25"}`}
+                className={`bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-lg shadow-slate-100/50 dark:shadow-none border border-sky-100 dark:border-slate-800/80 ${msg.sender === "ai" ? "rounded-tl-none ring-1 ring-sky-200 dark:ring-slate-850" : "rounded-tr-none bg-sky-50 dark:bg-slate-800 border-sky-250 dark:border-slate-700"}`}
               >
-                <div className="font-body-md text-body-md text-on-surface leading-relaxed">
+                <div className="font-body-md text-body-md text-slate-900 dark:text-slate-100 leading-relaxed">
                   <p>{msg.text}</p>
                 </div>
               </div>
-              <span className="text-[10px] text-on-surface-variant mt-1.5 opacity-60 font-label-md">{msg.time}</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 opacity-60 font-label-md">{msg.time}</span>
             </div>
           </div>
         ))}
 
         {/* Loading Indicator */}
         {loading && (
-          <div className="flex items-start gap-4 max-w-3xl">
-            <div className="w-10 h-10 rounded-full bg-primary-container text-tertiary flex items-center justify-center shrink-0 border border-white/5">
+          <div className="flex items-start gap-4 max-w-3xl animate-pulse">
+            <div className="w-10 h-10 rounded-full bg-sky-50 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 border border-sky-100 dark:border-slate-850">
               <span className="material-symbols-outlined text-[20px]">smart_toy</span>
             </div>
             <div className="flex flex-col">
-              <div className="glass-card rounded-2xl rounded-tl-none p-4 shadow-md border border-white/5">
-                <span className="text-on-surface-variant">DiaShield AI is typing...</span>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl rounded-tl-none p-4 shadow-md border border-sky-100 dark:border-slate-850">
+                <span className="text-slate-400 dark:text-slate-500">DiaShield AI is typing...</span>
               </div>
             </div>
           </div>
@@ -158,15 +156,15 @@ export default function ChatAssistant() {
       </div>
 
       {/* Input Sticky Panel */}
-      <div className="absolute bottom-0 left-0 w-full p-gutter pt-0 bg-gradient-to-t from-background via-background/95 to-transparent pb-[calc(1.5rem+80px)] md:pb-gutter z-30">
+      <div className="absolute bottom-0 left-0 w-full p-6 pt-0 bg-gradient-to-t from-white via-white/95 to-transparent dark:from-[#090D16] dark:via-[#090D16]/95 dark:to-transparent pb-[calc(1.5rem+80px)] md:pb-6 z-30">
         <div className="max-w-3xl mx-auto">
           {/* Suggestion Chips */}
-          <div className="flex gap-unit-2 mb-unit-4 overflow-x-auto hide-scroll w-full pb-1">
+          <div className="flex gap-2 mb-4 overflow-x-auto hide-scroll w-full pb-1">
             {suggestedChips.map((chip, i) => (
               <button 
                 key={i}
                 onClick={() => handleSend(chip)}
-                className="whitespace-nowrap px-unit-4 py-unit-2 rounded-full border border-white/10 bg-surface-container-high/50 hover:bg-white/10 hover:border-tertiary/30 text-on-surface-variant hover:text-tertiary font-label-md text-label-md cursor-pointer transition-all backdrop-blur-md"
+                className="whitespace-nowrap px-4 py-2 rounded-full border border-sky-100 dark:border-slate-800/80 bg-white dark:bg-slate-900 hover:bg-sky-50 dark:hover:bg-slate-800 hover:border-sky-200 dark:hover:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-sky-650 dark:hover:text-sky-300 font-label-md text-label-md cursor-pointer transition-all backdrop-blur-md"
               >
                 {chip}
               </button>
@@ -181,17 +179,17 @@ export default function ChatAssistant() {
             }}
             className="relative group"
           >
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-secondary-container/30 to-tertiary/20 rounded-xl blur opacity-30 group-focus-within:opacity-100 transition duration-500"></div>
-            <div className="relative flex items-center gap-2 bg-surface-container-high/90 backdrop-blur-xl rounded-xl p-2 border border-white/10 focus-within:border-tertiary/50 transition-colors shadow-lg">
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-sky-500 to-cyan-500 rounded-2xl blur opacity-25 group-focus-within:opacity-40 transition duration-500"></div>
+            <div className="relative flex items-center gap-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl p-2.5 border border-sky-100 dark:border-slate-800 focus-within:border-sky-400 dark:focus-within:border-sky-500 transition-colors shadow-2xl">
               <button
                 type="button"
                 onClick={() => alert('Attachments: PDF Clinical logs or laboratory data can be uploaded here.')}
-                className="p-2 text-on-surface-variant hover:text-on-surface transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[20px]">attach_file</span>
               </button>
               <input
-                className="bg-transparent flex-1 border-none outline-none text-on-surface font-body-md text-body-md p-2 placeholder:text-on-surface-variant/50 focus:ring-0"
+                className="bg-transparent flex-1 border-none outline-none text-slate-900 dark:text-slate-100 font-body-md text-body-md p-2 placeholder:text-slate-400 dark:placeholder:text-slate-550 focus:ring-0"
                 placeholder="Ask DiaShield AI anything about your health..."
                 type="text"
                 value={inputValue}
@@ -205,18 +203,18 @@ export default function ChatAssistant() {
               />
               <button
                 type="submit"
-                className="bg-tertiary text-on-tertiary w-10 h-10 rounded-lg flex items-center justify-center hover:bg-tertiary-fixed-dim hover:shadow-[0_0_15px_rgba(76,215,246,0.4)] transition-all shrink-0"
+                className="bg-sky-500 text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-sky-600 hover:shadow-lg hover:shadow-sky-500/30 transition-all shrink-0 cursor-pointer font-bold"
               >
                 <span className="material-symbols-outlined text-[20px]">send</span>
               </button>
             </div>
           </form>
-              {/* Error Message */}
-              {error && (
-                <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-error text-white px-6 py-3 rounded-xl shadow-lg z-50 font-label-md text-[14px] animate-fade-in">
-                  {error}
-                </div>
-              )}
+          {/* Error Message */}
+          {error && (
+            <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-red-550 text-white px-6 py-3 rounded-xl shadow-lg z-50 font-label-md text-[14px] animate-fade-in">
+              {error}
+            </div>
+          )}
         </div>
       </div>
     </div>

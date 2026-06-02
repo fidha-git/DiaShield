@@ -95,6 +95,7 @@ class DoctorResponse(BaseModel):
     phone: str
     consultation_fee: float
     bio: Optional[str] = None
+    profile_image: Optional[str] = None
 
     # FIXED
     created_at: datetime

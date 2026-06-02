@@ -1,310 +1,383 @@
+import React, { useEffect, useState } from 'react'
+import HealthTrendChart from './HealthTrendChart'
+import MonthlyAnalyticsChart from './MonthlyAnalyticsChart'
+import { Link, useNavigate } from 'react-router-dom'
+import { fetchPatientProfile, fetchDashboardStats } from '../services/dashboardService'
+import { fetchMonthlyAnalytics } from '../services/analyticsService'
+import { HealthcareHero } from '../components/Illustrations'
 
-import React, { useEffect, useState } from 'react';
-import HealthTrendChart from './HealthTrendChart';
-import MonthlyAnalyticsChart from './MonthlyAnalyticsChart';
-import SearchBar from '../components/SearchBar';
-import { Link, useNavigate } from 'react-router-dom';
-import { fetchPatientProfile, fetchDashboardStats } from '../services/dashboardService';
-import { fetchMonthlyAnalytics } from '../services/analyticsService';
+const GREETINGS = [
+  { hr: [5, 12], text: 'Morning', icon: 'wb_sunny' },
+  { hr: [12, 17], text: 'Afternoon', icon: 'partly_cloudy_day' },
+  { hr: [17, 21], text: 'Evening', icon: 'nights_stay' },
+  { hr: [21, 24], text: 'Night', icon: 'bedtime' },
+  { hr: [0, 5], text: 'Night', icon: 'bedtime' },
+]
+
+function getGreeting() {
+  const h = new Date().getHours()
+  const g = GREETINGS.find(g => h >= g.hr[0] && h < g.hr[1])
+  return g || GREETINGS[0]
+}
+
+function StatCard({ stat, index }) {
+  const navigate = useNavigate()
+  return (
+    <div
+      onClick={() => navigate(stat.path)}
+      className="relative group cursor-pointer bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 hover:-translate-y-0.5 transition-all duration-300 p-6 overflow-hidden animate-scale-in"
+    >
+      <div className="absolute -top-8 -right-8 w-24 h-24 bg-sky-50/50 dark:bg-sky-500/5 rounded-full blur-2xl group-hover:bg-sky-100 transition-all duration-500" />
+      <div className="absolute -bottom-8 -left-8 w-20 h-20 bg-cyan-50/50 dark:bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-100 transition-all duration-500" />
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${stat.color}`}>
+            <span className="material-symbols-outlined text-2xl">{stat.icon}</span>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest group-hover:text-sky-500 transition-colors">
+            View All
+          </span>
+        </div>
+        <span className="block text-[34px] font-black text-slate-900 dark:text-slate-100 leading-none mb-1 tracking-tight">
+          {stat.count}
+        </span>
+        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          {stat.label.replace('\n', ' ')}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function Blob({ className }) {
+  return <div className={`floating-dot ${className}`} />
+}
 
 export default function Dashboard() {
-
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [dashboard, setDashboard] = useState(null);
-  const [analytics, setAnalytics] = useState([]);
-  const [analyticsLoading, setAnalyticsLoading] = useState(true);
-  const [analyticsError, setAnalyticsError] = useState(null);
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [profile, setProfile] = useState(null)
+  const [dashboard, setDashboard] = useState(null)
+  const [analytics, setAnalytics] = useState([])
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
+  const [analyticsError, setAnalyticsError] = useState(null)
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      setLoading(true);
-      setError(null);
+    (async () => {
+      setLoading(true)
       try {
         const [profileData, dashboardData] = await Promise.all([
           fetchPatientProfile(),
           fetchDashboardStats(),
-        ]);
-        setProfile(profileData);
-        console.log("Dashboard API Response", dashboardData);
-        setDashboard(dashboardData);
-      } catch (err) {
-        setError('Failed to load dashboard data');
+        ])
+        setProfile(profileData)
+        setDashboard(dashboardData)
+      } catch {
+        setError('Failed to load dashboard data')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    loadDashboard();
-  }, []);
+    })()
+  }, [])
 
   useEffect(() => {
-    const loadAnalytics = async () => {
-      setAnalyticsLoading(true);
-      setAnalyticsError(null);
+    (async () => {
+      setAnalyticsLoading(true)
       try {
-        const analyticsData = await fetchMonthlyAnalytics();
-        console.log('Monthly Analytics API Response:', analyticsData);
-        setAnalytics(analyticsData);
-      } catch (err) {
-        console.error("Analytics API Error:", err);
-        setAnalyticsError('Failed to load analytics data');
+        const data = await fetchMonthlyAnalytics()
+        setAnalytics(data)
+      } catch {
+        setAnalyticsError('Failed to load analytics')
       } finally {
-        setAnalyticsLoading(false);
+        setAnalyticsLoading(false)
       }
-    };
-    loadAnalytics();
-  }, []);
-  // Skeleton loader component
-  const ChartSkeleton = () => (
-    <div className="w-full h-full flex flex-col gap-3 p-2 animate-pulse">
-      <div className="h-3 w-1/3 rounded bg-white/10" />
-      <div className="flex-1 flex items-end gap-2">
-        {[40, 70, 55, 85, 60, 75, 50].map((h, i) => (
-          <div key={i} className="flex-1 rounded-t bg-white/10" style={{ height: `${h}%` }} />
-        ))}
-      </div>
-      <div className="h-2 w-full rounded bg-white/10" />
-    </div>
-  );
+    })()
+  }, [])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="text-on-surface-variant font-headline-md">Loading dashboard...</span>
+      <div className="space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="shimmer h-56 rounded-2xl" />
+          <div className="grid grid-cols-3 gap-4">
+            {[1,2,3].map(i => <div key={i} className="shimmer h-36 rounded-2xl" />)}
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="shimmer h-80 rounded-2xl" />
+            <div className="shimmer h-80 rounded-2xl" />
+          </div>
+        </div>
       </div>
-    );
+    )
   }
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="text-error font-headline-md">{error}</span>
+      <div className="flex items-center justify-center min-h-[360px]">
+        <span className="text-red-500 text-lg font-semibold">{error}</span>
       </div>
-    );
+    )
   }
-  // Stats config from backend
+
   const stats = [
     {
-      count: dashboard?.upcoming_appointments_count != null ? dashboard.upcoming_appointments_count : 'N/A',
-      label: 'Upcoming\nAppointments',
+      count: dashboard?.upcoming_appointments_count ?? 'N/A',
+      label: 'Upcoming Appointments',
       icon: 'calendar_today',
       path: '/appointments',
-      color: 'text-secondary bg-secondary-container/20'
+      color: 'text-sky-600 dark:text-sky-400 bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750 border border-sky-100/50 dark:border-slate-700/50'
     },
     {
-      count: dashboard?.medical_history_count != null ? dashboard.medical_history_count : 'N/A',
-      label: 'Medical\nHistory',
-      icon: 'history',
+      count: dashboard?.medical_history_count ?? 'N/A',
+      label: 'Health Timeline Entries',
+      icon: 'timeline',
       path: '/history',
-      color: 'text-primary bg-primary-container/50'
+      color: 'text-cyan-600 dark:text-cyan-400 bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-slate-800 dark:to-slate-750 border border-sky-100/50 dark:border-slate-700/50'
     },
     {
-      count: dashboard?.health_records_count != null ? dashboard.health_records_count : 'N/A',
-      label: 'Health\nRecords',
+      count: dashboard?.health_records_count ?? 'N/A',
+      label: 'Health Records',
       icon: 'description',
       path: '/records',
-      color: 'text-tertiary bg-tertiary-container/50'
-    },
-    {
-      count: dashboard?.prescription_count != null ? dashboard.prescription_count : 'N/A',
-      label: 'Active\nPrescriptions',
-      icon: 'medication',
-      path: '/records',
-      color: 'text-secondary bg-secondary/10'
+      color: 'text-emerald-600 dark:text-emerald-400 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-slate-800 dark:to-slate-750 border border-sky-100/50 dark:border-slate-700/50'
     }
-  ];
+  ]
 
-
-
-  // Health Trend chart: extract real glucose readings + all vitals for rich tooltip
-  const healthRecords = dashboard?.recent_health_records || [];
-  console.log("Health Records from API:", healthRecords);
-
-  // Parse numeric value from strings like "120", "120.5", "120 mg/dL"
+  const healthRecords = dashboard?.recent_health_records || []
   const parseNumeric = (val) => {
-    if (val === undefined || val === null) return NaN;
-    const n = parseFloat(String(val).replace(/[^\d.]/g, ''));
-    return isNaN(n) ? NaN : n;
-  };
-
-  // Sort records by timestamp ascending so the trend line reads left-to-right
+    if (val == null) return NaN
+    const n = parseFloat(String(val).replace(/[^\d.]/g, ''))
+    return isNaN(n) ? NaN : n
+  }
   const sortedRecords = [...healthRecords].sort((a, b) => {
-    const ta = new Date(a.created_at || a.recorded_at || 0).getTime();
-    const tb = new Date(b.created_at || b.recorded_at || 0).getTime();
-    return ta - tb;
-  });
-
+    return new Date(a.created_at || a.recorded_at || 0) - new Date(b.created_at || b.recorded_at || 0)
+  })
   const trendData = sortedRecords
-    .map(r => {
-      const glucose = parseNumeric(r.blood_sugar);
-      const ts = r.created_at || r.recorded_at;
-      return {
-        date: ts ? new Date(ts).toLocaleDateString() : 'N/A',
-        glucose,
-        blood_pressure: r.blood_pressure || 'N/A',
-        heart_rate: r.heart_rate || 'N/A',
-        bmi: r.bmi || 'N/A',
-      };
-    })
-    .filter(r => !isNaN(r.glucose));
+    .map(r => ({
+      date: (r.created_at || r.recorded_at) ? new Date(r.created_at || r.recorded_at).toLocaleDateString() : 'N/A',
+      glucose: parseNumeric(r.blood_sugar),
+      blood_pressure: r.blood_pressure || 'N/A',
+      heart_rate: r.heart_rate || 'N/A',
+      bmi: r.bmi || 'N/A',
+    }))
+    .filter(r => !isNaN(r.glucose))
 
-  console.log("Trend Data (parsed):", trendData);
+  const monthlyAnalytics = Array.isArray(analytics) ? analytics : []
+  const greeting = getGreeting()
+  const firstName = profile?.first_name || profile?.name?.split(' ')[0] || 'Patient'
 
-  // analytics is already the array returned by fetchMonthlyAnalytics
-  const monthlyAnalytics = Array.isArray(analytics) ? analytics : [];
-  console.log('Dashboard monthly analytics records:', monthlyAnalytics);
+  const formatPct = () => {
+    const p = dashboard?.latest_prediction?.probability
+    if (p == null || (typeof p === 'string' && p.trim() === '')) return 'N/A'
+    let val = Number(p)
+    if (isNaN(val)) return 'N/A'
+    if (val > 0 && val <= 1) val = Math.round(val * 100)
+    return `${Math.round(val)}%`
+  }
+  const risk = dashboard?.latest_prediction?.risk_level
 
   return (
-    <div className="p-unit-6 md:p-gutter min-h-screen">
-      <div className="max-w-container-max mx-auto">
-        {/* Header Section */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-unit-8">
-          <div>
-            <h2 className="font-display-lg text-[32px] md:text-display-lg text-on-surface">Welcome back, {profile?.first_name || profile?.name || ''}</h2>
-            <p className="font-body-md text-on-surface-variant mt-1">Here is your health overview for today.</p>
-          </div>
-          <div className="w-full md:w-auto flex items-center gap-4">
-            <SearchBar />
-            <button className="hidden md:flex relative p-2 rounded-full bg-surface-container-high border border-white/10 hover:bg-white/5 transition-colors">
-              <span className="material-symbols-outlined text-on-surface-variant">notifications</span>
-              <span className="absolute top-1 right-1 w-2 h-2 bg-tertiary rounded-full glass-glow-cyan"></span>
-            </button>
-          </div>
-        </header>
+    <div className="space-y-6 animate-fade-in transition-colors duration-300">
+      <div className="max-w-7xl mx-auto space-y-6">
 
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-8 gap-unit-6">
-          {/* Latest Prediction Card */}
-          <div className="md:col-span-3 glass-card rounded-xl p-unit-6 glass-glow-cyan flex flex-col justify-between relative overflow-hidden group min-h-[260px]">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-tertiary/10 rounded-full blur-3xl group-hover:bg-tertiary/20 transition-all duration-500"></div>
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-tertiary">query_stats</span>
-                  Latest Prediction
-                </h3>
-              </div>
-              <p className="font-body-sm text-on-surface-variant mb-6">Based on your recent lab results and continuous monitoring.</p>
-              <div className="flex items-end gap-4 mb-2">
-                <span className="font-display-lg text-[42px] md:text-display-lg text-tertiary leading-none">
-                  {(() => {
-                    const p = dashboard?.latest_prediction?.probability;
-                    if (p == null) return 'N/A';
-                    if (typeof p === 'string' && p.trim() === '') return 'N/A';
-                    let val = Number(p);
-                    if (isNaN(val)) return 'N/A';
-                    if (val > 0 && val <= 1) val = Math.round(val * 100);
-                    else val = Math.round(val);
-                    return `${val}%`;
-                  })()}
-                </span>
-                <span className="font-body-md text-on-surface-variant pb-1">Probability</span>
-              </div>
-            </div>
-            <div className="mt-8 pt-4 border-t border-white/10 flex justify-between items-center z-10">
-              <div>
-                <span className="block font-label-md text-on-surface-variant text-[11px]">Risk Level</span>
-                <span className="font-headline-lg-mobile text-green-400">
-                  {dashboard?.latest_prediction && dashboard.latest_prediction.risk_level
-                    ? dashboard.latest_prediction.risk_level
-                    : 'No prediction available'}
-                </span>
-              </div>
-              <Link to="/prediction" className="px-4 py-2 bg-tertiary/10 text-tertiary border border-tertiary/30 rounded-lg font-label-md hover:bg-tertiary/20 transition-colors">
-                View Details
-              </Link>
-            </div>
-          </div>
-
-          {/* Stats Overview Cards */}
-          <div className="md:col-span-5 grid grid-cols-2 md:grid-cols-4 gap-4">
-            {stats.map((stat, i) => (
-              <div 
-                key={i}
-                onClick={() => navigate(stat.path)}
-                className="glass-card rounded-xl p-4 flex flex-col justify-center items-center text-center hover:bg-white/5 transition-colors cursor-pointer"
-              >
-                <div className={`${stat.color} w-12 h-12 rounded-full flex items-center justify-center mb-3`}>
-                  <span className="material-symbols-outlined">{stat.icon}</span>
+        {/* ───────────── HERO ───────────── */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 p-[2px] shadow-2xl shadow-sky-500/20 dark:shadow-sky-500/10">
+          <div className="relative overflow-hidden rounded-[calc(1.5rem-2px)] bg-white dark:bg-[#0F172A] transition-colors duration-300">
+            <Blob className="w-96 h-96 bg-sky-400/20 dark:bg-sky-500/5 -top-20 -right-20 animate-blob1" />
+            <Blob className="w-80 h-80 bg-cyan-300/20 dark:bg-cyan-500/5 -bottom-32 -left-20 animate-blob2" />
+            <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-[10px] font-bold uppercase tracking-widest mb-4 shadow-lg shadow-sky-500/20">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                  </span>
+                  System Online
                 </div>
-                <span className="font-display-lg text-[28px] md:text-headline-lg text-on-surface mb-1">{stat.count}</span>
-                <span className="font-label-md text-on-surface-variant text-[11px] whitespace-pre-line leading-snug">{stat.label}</span>
+                <h1 className="hero-title text-[30px] md:text-[44px] transition-colors">
+                  Good {greeting.text},{' '}
+                  <span className="text-gradient">{firstName}</span>
+                </h1>
+                <p className="hero-subtitle mt-3 text-base max-w-xl transition-colors">
+                  Your comprehensive health overview. Track vitals, review predictions, and manage appointments — all in one place.
+                </p>
+                <div className="flex flex-wrap gap-3 mt-8">
+                  <Link to="/records">
+                    <button className="btn-primary cursor-pointer">
+                      <span className="material-symbols-outlined text-base">add_circle</span>
+                      Add Record
+                    </button>
+                  </Link>
+                  <Link to="/appointments">
+                    <button className="btn-outline cursor-pointer">
+                      <span className="material-symbols-outlined text-base">event_available</span>
+                      Book Appointment
+                    </button>
+                  </Link>
+                  <Link to="/prediction">
+                    <button className="btn-outline cursor-pointer">
+                      <span className="material-symbols-outlined text-base">query_stats</span>
+                      Run Prediction
+                    </button>
+                  </Link>
+                </div>
               </div>
+              <div className="hidden lg:block w-64 shrink-0">
+                <HealthcareHero className="w-full h-auto" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ───────────── BENTO GRID ───────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+          {/* ── Prediction ── */}
+          <div className="md:col-span-4 bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 hover:-translate-y-0.5 transition-all duration-300 p-6 flex flex-col justify-between min-h-[290px] relative overflow-hidden group">
+            <Blob className="w-64 h-64 bg-sky-400/20 dark:bg-sky-500/5 -top-32 -right-32 group-hover:opacity-30 transition-all duration-700" />
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-slate-850 dark:to-slate-800 text-sky-700 dark:text-sky-400 text-[11px] font-bold mb-4 border border-sky-100/20 dark:border-slate-800/30">
+                <span className="material-symbols-outlined text-sm">smart_toy</span>
+                AI Assessment
+              </div>
+              <p className="text-xs text-muted mb-6 leading-relaxed">
+                Based on your recent lab results and continuous monitoring.
+              </p>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-[46px] font-black text-sky-600 dark:text-sky-400 leading-none tracking-tighter">
+                  {formatPct()}
+                </span>
+                <span className="text-sm text-muted font-medium">Risk Score</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
+                  risk === 'High' ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-200 dark:ring-red-500/20' :
+                  risk === 'Moderate' ? 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 ring-1 ring-amber-200 dark:ring-amber-500/20' :
+                  'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 ring-1 ring-green-200 dark:ring-green-500/20'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    risk === 'High' ? 'bg-red-500 animate-pulse' :
+                    risk === 'Moderate' ? 'bg-amber-500' : 'bg-green-500'
+                  }`} />
+                  {risk || 'No data'}
+                </span>
+              </div>
+            </div>
+            <Link to="/prediction" className="relative z-10 inline-flex items-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 mt-6 transition-colors group/link">
+              View Full Report
+              <span className="material-symbols-outlined text-base group-hover/link:translate-x-1 transition-transform">arrow_forward</span>
+            </Link>
+          </div>
+
+          {/* ── Stats ── */}
+          <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {stats.map((stat, i) => (
+              <StatCard key={i} stat={stat} index={i} />
             ))}
           </div>
 
-          {/* Charts Section */}
-          <div className="md:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-unit-6">
-            {/* Health Trend Chart */}
-            <div className="glass-card rounded-xl p-unit-6 h-[360px] flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary">trending_up</span>
-                  Blood Sugar Trend
-                </h3>
-              </div>
-              <div className="flex-1 min-h-0 w-full p-3 md:p-4 border border-white/5 rounded-lg bg-surface-container-lowest/30 overflow-hidden">
-                {loading ? (
-                  <ChartSkeleton />
-                ) : error ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-error font-label-md">Failed to load health trend</span>
-                  </div>
-                ) : (
-                  <HealthTrendChart data={trendData} />
-                )}
+          {/* ── Charts ── */}
+          <div className="md:col-span-6 bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6 h-[390px] flex flex-col relative overflow-hidden group">
+            <Blob className="w-48 h-48 bg-sky-400/20 dark:bg-sky-500/5 -top-24 -right-24 group-hover:opacity-30 transition-all duration-700" />
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-slate-800 dark:to-slate-750 flex items-center justify-center shadow-inner">
+                  <span className="material-symbols-outlined text-cyan-600 dark:text-cyan-400 text-xl">trending_up</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Blood Sugar Trend</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Last 30 Days</p>
+                </div>
               </div>
             </div>
-
-            {/* Monthly Analytics */}
-            <div className="glass-card rounded-xl p-unit-6 h-[360px] flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary">analytics</span>
-                  Avg Blood Sugar / Month
-                </h3>
-              </div>
-              <div className="flex-1 min-h-0 w-full p-3 md:p-4 border border-white/5 rounded-lg bg-surface-container-lowest/30 overflow-hidden">
-                {analyticsLoading ? (
-                  <ChartSkeleton />
-                ) : analyticsError ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-on-surface-variant font-label-md">No analytics data available</span>
-                  </div>
-                ) : (
-                  <MonthlyAnalyticsChart data={monthlyAnalytics} />
-                )}
-              </div>
+            <div className="relative z-10 flex-1 min-h-0 p-3 bg-gradient-to-br from-sky-50/50 to-cyan-50/50 dark:from-slate-900/60 dark:to-slate-900/40 border border-sky-100/50 dark:border-slate-800 rounded-xl overflow-hidden">
+              {loading ? (
+                <div className="shimmer w-full h-full rounded-lg" />
+              ) : error ? (
+                <div className="w-full h-full flex items-center justify-center text-red-500 text-xs font-medium">Failed to load</div>
+              ) : (
+                <HealthTrendChart data={trendData} />
+              )}
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="md:col-span-8 glass-card rounded-xl p-unit-6">
-            <h3 className="font-headline-md text-headline-md text-on-surface mb-4">Quick Actions</h3>
-            <div className="flex flex-wrap gap-4">
-              <Link to="/records" className="w-full md:w-auto">
-                <button className="w-full flex items-center justify-center gap-2 bg-secondary-container text-white px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-secondary-container/85 transition-colors shadow-lg">
-                  <span className="material-symbols-outlined">add_circle</span>
-                  Add Health Record
-                </button>
-              </Link>
-              <Link to="/history" className="w-full md:w-auto" onClick={() => console.log("Navigating to Medical History")}>
-                <button className="w-full flex items-center justify-center gap-2 bg-surface-container border border-white/20 text-on-surface px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-white/10 transition-colors backdrop-blur-md">
-                  <span className="material-symbols-outlined">visibility</span>
-                  View Medical History
-                </button>
-              </Link>
-              <Link to="/appointments" className="w-full md:w-auto">
-                <button className="w-full flex items-center justify-center gap-2 bg-surface-container border border-white/20 text-on-surface px-6 py-3 rounded-lg font-label-md text-label-md hover:bg-white/10 transition-colors backdrop-blur-md">
-                  <span className="material-symbols-outlined">event_available</span>
-                  Book Appointment
-                </button>
-              </Link>
+          <div className="md:col-span-6 bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6 h-[390px] flex flex-col relative overflow-hidden group">
+            <Blob className="w-48 h-48 bg-emerald-400/20 dark:bg-emerald-500/5 -top-24 -right-24 group-hover:opacity-30 transition-all duration-700" />
+            <div className="relative z-10 flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-slate-800 dark:to-slate-750 flex items-center justify-center shadow-inner">
+                  <span className="material-symbols-outlined text-emerald-600 dark:text-emerald-400 text-xl">analytics</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Avg Blood Sugar / Month</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Monthly Summary</p>
+                </div>
+              </div>
+            </div>
+            <div className="relative z-10 flex-1 min-h-0 p-3 bg-gradient-to-br from-sky-50/50 to-emerald-50/50 dark:from-slate-900/60 dark:to-slate-900/40 border border-sky-100/50 dark:border-slate-800 rounded-xl overflow-hidden">
+              {analyticsLoading ? (
+                <div className="shimmer w-full h-full rounded-lg" />
+              ) : analyticsError || monthlyAnalytics.length === 0 ? (
+                <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500 text-xs font-medium">No data available</div>
+              ) : (
+                <MonthlyAnalyticsChart data={monthlyAnalytics} />
+              )}
+            </div>
+          </div>
+
+          {/* ── Quick Actions ── */}
+          <div className="md:col-span-12 bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6 relative overflow-hidden">
+            <Blob className="w-64 h-64 bg-sky-400/20 dark:bg-sky-500/5 -bottom-32 -right-32" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750 flex items-center justify-center shadow-inner">
+                  <span className="material-symbols-outlined text-sky-600 dark:text-sky-400 text-xl">bolt</span>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">Quick Actions</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">Frequently used tasks</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Link to="/records">
+                  <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-sky-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover/card:shadow-xl group-hover/card:shadow-sky-500/30 transition-shadow">
+                      <span className="material-symbols-outlined text-white text-xl">add_circle</span>
+                    </div>
+                    <div>
+                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">Add Health Record</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Log your latest vitals</span>
+                    </div>
+                  </div>
+                </Link>
+                <Link to="/history">
+                  <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-cyan-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-cyan-200 dark:hover:border-cyan-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover/card:shadow-xl group-hover/card:shadow-cyan-500/30 transition-shadow">
+                      <span className="material-symbols-outlined text-white text-xl">timeline</span>
+                    </div>
+                    <div>
+                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">View Health Timeline</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Review your health journey</span>
+                    </div>
+                  </div>
+                </Link>
+                <Link to="/appointments">
+                  <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-emerald-200 dark:hover:border-emerald-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover/card:shadow-xl group-hover/card:shadow-emerald-500/30 transition-shadow">
+                      <span className="material-symbols-outlined text-white text-xl">event_available</span>
+                    </div>
+                    <div>
+                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">Book Appointment</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Schedule a doctor visit</span>
+                    </div>
+                  </div>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }
+

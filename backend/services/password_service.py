@@ -1,7 +1,6 @@
 # Password service for DiaShield Forgot/Reset Password API
 
 from datetime import datetime, timedelta, timezone
-import os
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -9,15 +8,8 @@ from jose import jwt
 from passlib.context import CryptContext
 
 from models.user_model import User
+from utils.jwt_handler import SECRET_KEY, ALGORITHM
 
-
-# JWT configuration
-SECRET_KEY = os.getenv(
-    "JWT_SECRET_KEY",
-    "your-secret-key"
-)
-
-ALGORITHM = "HS256"
 RESET_TOKEN_EXPIRE_MINUTES = 15
 
 

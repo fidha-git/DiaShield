@@ -4,7 +4,7 @@ Run: python backend/seed_admin.py
 """
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from passlib.context import CryptContext
 
 # Ensure we can import from backend
@@ -47,7 +47,7 @@ def seed_admin():
             email="admin@diashield.com",
             password=pwd_context.hash("admin123"),
             role="admin",
-            created_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
             is_active=True,
         )
         db.add(admin)

@@ -2,7 +2,9 @@
 Doctor profile management API routes
 """
 
-from fastapi import APIRouter, Depends, status
+import os
+import uuid
+from fastapi import APIRouter, Depends, status, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
 from schemas.doctor_schema import (
@@ -27,11 +29,56 @@ from utils.auth_middleware import (
 from utils.role_middleware import require_role
 
 
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+
+
 # Create router BEFORE decorators
 router = APIRouter(
     prefix="/doctor",
     tags=["Doctor"]
 )
+
+
+@router.post(
+    "/profile/upload-image",
+    response_model=DoctorResponse,
+    status_code=status.HTTP_200_OK
+)
+async def upload_doctor_profile_image(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(["doctor"]))
+):
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type '{ext}'. Allowed: jpg, jpeg, png, webp"
+        )
+
+    contents = await file.read()
+    if len(contents) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large. Maximum size is 5 MB"
+        )
+
+    upload_dir = "uploads/profile_images"
+    os.makedirs(upload_dir, exist_ok=True)
+
+    unique_name = f"{uuid.uuid4().hex}{ext}"
+    file_path = os.path.join(upload_dir, unique_name)
+
+    with open(file_path, "wb") as f:
+        f.write(contents)
+
+    doctor = get_doctor_by_user_id(db, current_user.id)
+    doctor.profile_image = f"/uploads/profile_images/{unique_name}"
+    db.commit()
+    db.refresh(doctor)
+
+    return doctor
 
 
 @router.get(

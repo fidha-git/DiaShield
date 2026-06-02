@@ -22,21 +22,19 @@ function AnalyticsTooltip({ active, payload, label }) {
         borderRadius: '10px',
         padding: '10px 14px',
         fontSize: '12px',
-        color: '#f1f5f9',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        color: '#0F172A',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.1)',
       }}
     >
-      <p style={{ color: '#94a3b8', marginBottom: 6, fontWeight: 600 }}>{d.month}</p>
-      <p><span style={{ color: '#06b6d4' }}>Avg Blood Sugar:</span> {d.avg_blood_sugar} mg/dL</p>
+      <p style={{ color: '#64748b', marginBottom: 6, fontWeight: 600 }}>{d.month}</p>
+      <p><span style={{ color: '#0EA5E9' }}>Avg Blood Sugar:</span> {d.avg_blood_sugar} mg/dL</p>
       <p><span style={{ color: '#94a3b8' }}>Records:</span> {d.record_count}</p>
     </div>
   );
 }
 
 export default function MonthlyAnalyticsChart({ data }) {
-  console.log('MonthlyAnalyticsChart incoming data:', data);
-
-  const monthlyRecords = Array.isArray(data)
+const monthlyRecords = Array.isArray(data)
     ? data
         .filter((item) => item && typeof item.month === 'string')
         .map((item) => ({
@@ -45,10 +43,7 @@ export default function MonthlyAnalyticsChart({ data }) {
           record_count: Number(item.record_count) || 0,
         }))
     : [];
-
-  console.log('MonthlyAnalyticsChart normalized records:', monthlyRecords);
-
-  if (!monthlyRecords.length) {
+if (!monthlyRecords.length) {
     return (
       <div className="w-full h-[250px] flex items-center justify-center overflow-hidden">
         <span className="text-on-surface-variant font-label-md">No analytics data available</span>
@@ -64,20 +59,20 @@ export default function MonthlyAnalyticsChart({ data }) {
           margin={{ top: 24, right: 20, left: 0, bottom: 30 }}
           barCategoryGap={monthlyRecords.length === 1 ? '75%' : '30%'}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
           <XAxis
             dataKey="month"
             height={44}
             tickMargin={10}
             tick={{ fill: '#94a3b8', fontSize: 12 }}
-            axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
+            axisLine={{ stroke: '#E0F2FE' }}
             tickLine={false}
           />
           <YAxis
             allowDecimals={false}
             width={38}
             tick={{ fill: '#94a3b8', fontSize: 12 }}
-            axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
+            axisLine={{ stroke: '#E0F2FE' }}
             tickLine={false}
             domain={[0, 'auto']}
             label={{
@@ -88,10 +83,10 @@ export default function MonthlyAnalyticsChart({ data }) {
               style: { fill: '#64748b', fontSize: 10 },
             }}
           />
-          <Tooltip content={<AnalyticsTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
+          <Tooltip content={<AnalyticsTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
           <Bar
             dataKey="avg_blood_sugar"
-            fill="#06b6d4"
+            fill="#0EA5E9"
             radius={[6, 6, 0, 0]}
             maxBarSize={56}
             barSize={monthlyRecords.length === 1 ? 56 : 32}

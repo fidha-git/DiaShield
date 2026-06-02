@@ -130,26 +130,6 @@ def get_patient_profile(
     return patient
 
 
-def create_patient_profile(
-    db: Session,
-    user_id: int,
-    patient_data: PatientCreate
-):
-    existing_patient = db.query(Patient).filter(Patient.user_id == user_id).first()
-    if existing_patient:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Patient profile already exists"
-        )
-    patient = Patient(
-        user_id=user_id,
-        **patient_data.model_dump()
-    )
-    db.add(patient)
-    db.commit()
-    db.refresh(patient)
-    return patient
-
 # Update patient profile
 def update_patient_profile(
     db: Session,

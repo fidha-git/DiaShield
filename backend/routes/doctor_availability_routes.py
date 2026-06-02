@@ -14,6 +14,8 @@ from services.doctor_availability_service import (
     update_slot,
     delete_slot
 )
+from utils.role_middleware import require_role
+from models.user_model import User
 
 router = APIRouter(
     prefix="/doctor",
@@ -27,7 +29,8 @@ router = APIRouter(
 def create_slot(
     doctor_id: int,
     data: DoctorAvailabilityCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(["doctor", "admin"]))
 ):
     return add_slot(
         doctor_id,
@@ -57,7 +60,8 @@ def get_doctor_slots(
 def edit_slot(
     slot_id: int,
     data: DoctorAvailabilityCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(["doctor", "admin"]))
 ):
     return update_slot(slot_id, data, db)
 
@@ -67,6 +71,7 @@ def edit_slot(
 )
 def remove_slot(
     slot_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(["doctor", "admin"]))
 ):
     return delete_slot(slot_id, db)

@@ -6,14 +6,26 @@ import {
   getDoctorAppointments,
 } from "../services/doctorService";
 
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+}
+
+function formatTime(timeStr) {
+  if (!timeStr) return "—";
+  return timeStr.slice(0, 5);
+}
+
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
-  const bg = type === "success" ? "bg-green-500/20 border-green-500/30 text-green-300" : "bg-red-500/20 border-red-500/30 text-red-300";
-  const icon = type === "success" ? "check_circle" : "error";
+  const isSuccess = type === "success";
+  const bg = isSuccess ? "bg-green-50 border-green-200 text-green-600" : "bg-red-50 border-red-200 text-red-600";
+  const icon = isSuccess ? "check_circle" : "error";
   return (
-    <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-xl ${bg} shadow-2xl animate-slide-down`}>
+    <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-3 rounded-xl border shadow-2xl animate-slide-down ${bg}`}>
       <span className="material-symbols-outlined text-lg">{icon}</span>
-      <span className="font-label-md">{message}</span>
+      <span className="text-sm font-semibold">{message}</span>
       <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100"><span className="material-symbols-outlined text-lg">close</span></button>
     </div>
   );
@@ -21,13 +33,14 @@ function Toast({ message, type, onClose }) {
 
 function StatCard({ icon, label, value, color, onClick }) {
   return (
-    <div onClick={onClick} className="glass-card rounded-xl p-5 flex items-center gap-4 hover:bg-white/5 transition-colors cursor-pointer">
-      <div className={`w-12 h-12 rounded-full ${color} flex items-center justify-center`}>
-        <span className="material-symbols-outlined">{icon}</span>
+    <div onClick={onClick} className="relative group bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 hover:-translate-y-0.5 transition-all duration-300 p-5 flex items-center gap-4 cursor-pointer overflow-hidden">
+      <div className="absolute -top-6 -right-6 w-16 h-16 bg-sky-50 rounded-full blur-2xl group-hover:bg-sky-100 transition-all duration-500" />
+      <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
+        <span className="material-symbols-outlined text-xl">{icon}</span>
       </div>
-      <div>
-        <span className="font-display-lg text-[28px] text-on-surface">{value}</span>
-        <p className="font-label-md text-on-surface-variant text-[11px]">{label}</p>
+      <div className="relative z-10">
+        <span className="block text-[28px] font-bold text-slate-900 leading-none mb-1">{value}</span>
+        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
       </div>
     </div>
   );
@@ -71,7 +84,11 @@ export default function DoctorDashboard() {
   );
   const upcomingAppts = appointments
     .filter((a) => a.status === "booked")
-    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .sort((a, b) => {
+      const da = a.date ? new Date(a.date) : new Date(0);
+      const db = b.date ? new Date(b.date) : new Date(0);
+      return da - db;
+    })
     .slice(0, 5);
 
   const totalSlots = dashboard?.total_appointments ?? 0;
@@ -82,58 +99,72 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <span className="text-on-surface-variant font-headline-md">Loading dashboard...</span>
+      <div className="space-y-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="shimmer h-32 rounded-2xl" />
+          <div className="grid grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => <div key={i} className="shimmer h-24 rounded-2xl" />)}
+          </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="shimmer h-64 rounded-2xl" />
+            <div className="shimmer h-64 rounded-2xl" />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-unit-6 md:p-gutter min-h-screen">
-      <div className="max-w-container-max mx-auto">
+    <div className="space-y-6">
+      <div className="max-w-7xl mx-auto">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-        <header className="mb-unit-8">
-          <h2 className="font-display-lg text-[32px] md:text-display-lg text-on-surface">
-            Welcome, Dr. {profile?.name || "Doctor"}
-          </h2>
-          <p className="font-body-md text-on-surface-variant mt-1">
+        <header className="mb-8">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 border border-sky-200 text-sky-700 text-[10px] font-bold uppercase tracking-widest mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+            Doctor Portal
+          </div>
+          <h1 className="text-[32px] md:text-[42px] font-bold tracking-tight leading-tight">
+            Welcome, Dr.{' '}
+            <span className="text-gradient">{profile?.name || "Doctor"}</span>
+          </h1>
+          <p className="text-slate-400 mt-2 text-base">
             {profile?.specialization} &middot; {profile?.hospital}
           </p>
         </header>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-unit-8">
-          <StatCard icon="calendar_month" label="Total Appointments" value={totalSlots} color="bg-blue-500/20 text-blue-400" />
-          <StatCard icon="upcoming" label="Upcoming" value={booked} color="bg-green-500/20 text-green-400" onClick={() => navigate("/doctor/appointments")} />
-          <StatCard icon="check_circle" label="Completed" value={completed} color="bg-cyan-500/20 text-cyan-400" />
-          <StatCard icon="event_available" label="Available Slots" value={availableSlots} color="bg-purple-500/20 text-purple-400" onClick={() => navigate("/doctor/availability")} />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard icon="calendar_month" label="Total Appointments" value={totalSlots} color="bg-gradient-to-br from-sky-100 to-sky-200 text-sky-600" />
+          <StatCard icon="upcoming" label="Upcoming" value={booked} color="bg-gradient-to-br from-green-100 to-green-200 text-green-600" onClick={() => navigate("/doctor/appointments")} />
+          <StatCard icon="check_circle" label="Completed" value={completed} color="bg-gradient-to-br from-cyan-100 to-cyan-200 text-cyan-600" />
+          <StatCard icon="event_available" label="Available Slots" value={availableSlots} color="bg-gradient-to-br from-sky-100 to-sky-200 text-sky-600" onClick={() => navigate("/doctor/availability")} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-unit-6 mb-unit-8">
-          <div className="glass-card rounded-xl p-unit-6">
-            <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-cyan-400">today</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6">
+            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-sky-500">today</span>
               Today's Schedule
             </h3>
             {todayAppts.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-on-surface-variant">
+              <div className="flex flex-col items-center py-8 text-slate-500">
                 <span className="material-symbols-outlined text-3xl mb-2">event_busy</span>
                 <p className="font-body-md">No appointments today</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {todayAppts.map((apt) => (
-                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                    <div className="w-10 h-10 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-cyan-400 text-lg">person</span>
+                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50">
+                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-sky-500 text-lg">person</span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-label-md text-on-surface">{apt.doctor_name || `Patient #${apt.id}`}</p>
-                      <p className="font-body-sm text-on-surface-variant text-[11px]">
-                        {apt.start_time?.slice(0, 5)} - {apt.end_time?.slice(0, 5)}
+                      <p className="font-label-md text-slate-900">{apt.patient_name || `Patient #${apt.id}`}</p>
+                      <p className="font-body-sm text-slate-500 text-[11px]">
+                        {formatTime(apt.start_time)} - {formatTime(apt.end_time)}
                       </p>
                     </div>
-                    <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-[11px] font-label-md">
+                    <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 border border-green-200 text-[10px] font-bold uppercase tracking-wider">
                       {apt.status}
                     </span>
                   </div>
@@ -142,27 +173,27 @@ export default function DoctorDashboard() {
             )}
           </div>
 
-          <div className="glass-card rounded-xl p-unit-6">
-            <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-purple-400">upcoming</span>
+          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6">
+            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-sky-500">upcoming</span>
               Upcoming Appointments
             </h3>
             {upcomingAppts.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-on-surface-variant">
+              <div className="flex flex-col items-center py-8 text-slate-500">
                 <span className="material-symbols-outlined text-3xl mb-2">event_note</span>
                 <p className="font-body-md">No upcoming appointments</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {upcomingAppts.map((apt) => (
-                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-white/5">
-                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-purple-400 text-lg">person</span>
+                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50">
+                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-sky-500 text-lg">person</span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-label-md text-on-surface">{apt.doctor_name || `Appointment #${apt.id}`}</p>
-                      <p className="font-body-sm text-on-surface-variant text-[11px]">
-                        {new Date(apt.date).toLocaleDateString()} &middot; {apt.start_time?.slice(0, 5)}
+                      <p className="font-label-md text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                      <p className="font-body-sm text-slate-500 text-[11px]">
+                        {formatDate(apt.date)} &middot; {formatTime(apt.start_time)}
                       </p>
                     </div>
                   </div>
@@ -172,9 +203,9 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        <div className="glass-card rounded-xl p-unit-6 mb-unit-8">
-          <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
-            <span className="material-symbols-outlined text-green-400">bolt</span>
+        <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6 mb-8">
+          <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-sky-500">bolt</span>
             Quick Actions
           </h3>
           <div className="flex flex-wrap gap-4">
@@ -193,10 +224,11 @@ function QuickActionBtn({ icon, label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-5 py-2.5 rounded-lg font-label-md hover:from-cyan-500 hover:to-blue-500 transition-all shadow-lg"
+      className="flex items-center gap-2 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:from-sky-600 hover:to-cyan-600 hover:-translate-y-0.5 transition-all duration-200 shadow-lg shadow-sky-500/20 hover:shadow-xl hover:shadow-sky-500/30"
     >
       <span className="material-symbols-outlined text-lg">{icon}</span>
       {label}
     </button>
   );
 }
+

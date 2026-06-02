@@ -21,7 +21,11 @@ class AdminResponse(BaseModel):
 class UserResponse(BaseModel):
     id: int
     email: str
+    username: str
+    role: str
+    is_active: bool | None = None
     created_at: datetime
+    profile_image: str | None = None
 
     class Config:
         from_attributes = True

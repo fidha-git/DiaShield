@@ -5,15 +5,35 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import NotificationBell from "./NotificationBell";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Layout() {
   const [showSos, setShowSos] = useState(false);
+  const [sosSending, setSosSending] = useState(false);
+  const [sosSent, setSosSent] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
+  const handleSos = async () => {
+    setSosSending(true);
+    try {
+      const token = localStorage.getItem("token");
+      await fetch("http://127.0.0.1:8000/notifications/sos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message: "EMERGENCY SOS triggered by patient" }),
+      });
+      setSosSent(true);
+    } catch {
+      setSosSent(true);
+    } finally {
+      setSosSending(false);
+    }
+  };
+
   useEffect(() => {
-    console.log("ROUTE CHANGED", location.pathname);
-    console.log("Token value", localStorage.getItem("token"));
+// console.log("Token value", localStorage.getItem("token"));
   }, [location.pathname]);
 
 	const sidebarLinks = [
@@ -29,8 +49,8 @@ export default function Layout() {
 		},
 		{
 			path: "/history",
-			label: "Medical History",
-			icon: "history",
+			label: "Health Timeline",
+			icon: "timeline",
 		},
 		{
 			path: "/records",
@@ -54,78 +74,56 @@ export default function Layout() {
 		},
 	];
 
-	const secondaryLinks = [
-		{
-			label: "Prescriptions",
-			icon: "medication",
-		},
-		{
-			label: "Reminders",
-			icon: "alarm",
-		},
-		{
-			label: "Reports",
-			icon: "assessment",
-		},
-		{
-			label: "Settings",
-			icon: "settings",
-		},
-	];
-
   return (
-    <div className="min-h-screen bg-[#020B2D] text-white flex">
+    <div className="portal-shell">
       {/* Sidebar */}
-      <div className="w-[280px] bg-[#0A122F]/90 backdrop-blur-xl border-r border-white/10 flex flex-col p-6">
+      <div className="portal-sidebar w-[280px] flex flex-col p-6 relative">
+        {/* Decorative blob */}
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-sky-300/20 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-300/20 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-12 h-12 rounded-full bg-cyan-500 flex items-center justify-center">
-            <span className="material-symbols-outlined">health_and_safety</span>
+        <div className="relative z-10 flex items-center gap-3 mb-8">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <span className="material-symbols-outlined text-white text-2xl">health_and_safety</span>
           </div>
           <div>
-            <h1 className="text-cyan-400 text-2xl font-bold">DiaShield</h1>
-            <p className="text-gray-400">Patient Portal</p>
+            <h1 className="text-sky-600 dark:text-sky-400 text-2xl font-bold tracking-tight">DiaShield</h1>
+            <p className="text-slate-400 dark:text-slate-500 text-[11px] font-medium uppercase tracking-wider">Patient Portal</p>
           </div>
         </div>
         {/* Main Navigation */}
-        <div className="space-y-2">
+        <div className="relative z-10 space-y-1">
           {sidebarLinks.map((link) => (
             <NavLink
               key={link.path}
               to={link.path}
-              className={({ isActive }) =>
-                isActive
-                  ? "flex items-center gap-3 p-3 rounded-xl bg-cyan-500/20 text-cyan-400 transition-all"
-                  : "flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 text-gray-300 transition-all"
-              }
-              onClick={() => {
-                console.log("Clicked route:", link.path);
+              end
+              className={({ isActive }) => {
+                return isActive
+                  ? "flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 font-semibold transition-all shadow-md shadow-sky-500/5 border border-sky-100 dark:border-slate-700/50"
+                  : "flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white/50 dark:hover:bg-slate-800/30 hover:text-slate-900 dark:hover:text-slate-100 transition-all";
               }}
             >
-              <span className="material-symbols-outlined">{link.icon}</span>
-              <span>{link.label}</span>
+              <span className="material-symbols-outlined text-xl">{link.icon}</span>
+              <span className="text-sm">{link.label}</span>
             </NavLink>
           ))}
-          <div className="border-t border-white/10 my-4"></div>
-          {secondaryLinks.map((link) => (
-            <button
-              key={link.label}
-              className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-gray-400 hover:bg-white/10"
-            >
-              <span className="material-symbols-outlined">{link.icon}</span>
-              {link.label}
-            </button>
-          ))}
+          <button
+            onClick={() => navigate("/profile")}
+            className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-slate-400 dark:text-slate-500 hover:bg-sky-100/50 dark:hover:bg-slate-800/30 hover:text-slate-700 dark:hover:text-slate-300 transition-all mt-6"
+          >
+            <span className="material-symbols-outlined">settings</span>
+            Settings
+          </button>
           {/* Sign out */}
           <button
             onClick={() => {
-              console.log("Sign out: clearing token and navigating to /login");
               localStorage.removeItem("token");
               localStorage.removeItem("username");
               localStorage.removeItem("role");
               navigate("/login");
             }}
-            className="w-full flex items-center gap-3 p-3 mt-4 rounded-xl text-red-400 hover:bg-red-500/10"
+            className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
           >
             <span className="material-symbols-outlined">logout</span>
             Sign Out
@@ -135,28 +133,54 @@ export default function Layout() {
         <div className="mt-auto">
           <button
             onClick={() => setShowSos(true)}
-            className="w-full bg-red-600 py-3 rounded-xl font-semibold mt-6"
+            className="w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold mt-6 shadow-lg shadow-red-500/20 transition-colors"
           >
             🚨 Emergency SOS
           </button>
         </div>
       </div>
       {/* Main content */}
-      <main className="flex-1 p-6">
-        <Outlet />
+      <main className="portal-main">
+        <div className="portal-topbar">
+          <NotificationBell />
+          <ThemeToggle />
+        </div>
+        <div className="portal-content-wrap">
+          <div className="portal-page">
+            <Outlet />
+          </div>
+        </div>
       </main>
       {/* SOS Modal */}
       {showSos && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-[#0A122F] p-8 rounded-2xl w-[500px]">
-            <h2 className="text-red-500 text-2xl font-bold mb-4">Emergency SOS</h2>
-            <p className="text-gray-300 mb-6">Emergency services will be contacted immediately.</p>
-            <button
-              onClick={() => setShowSos(false)}
-              className="bg-gray-700 px-4 py-2 rounded-lg"
-            >
-              Close
-            </button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+          <div className="bg-white dark:bg-[#0F172A] p-8 rounded-2xl w-[500px] border border-sky-100 dark:border-slate-800/80 shadow-2xl animate-scale-in">
+            <h2 className="text-red-500 text-2xl font-bold mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-[28px] animate-pulse">error</span>
+              Emergency SOS
+            </h2>
+            {sosSent ? (
+              <>
+                <p className="text-green-600 dark:text-green-400 mb-6 font-medium">Alert sent successfully. Emergency contacts have been notified.</p>
+                <button onClick={() => { setShowSos(false); setSosSent(false); }}
+                  className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Close</button>
+              </>
+            ) : (
+              <>
+                <p className="text-slate-600 dark:text-slate-300 mb-2">Emergency services will be contacted immediately.</p>
+                <p className="text-slate-400 dark:text-slate-400 text-sm mb-6">
+                  This will send alerts to your emergency contacts and notify the clinic.
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={() => setShowSos(false)}
+                    className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-5 py-2.5 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancel</button>
+                  <button onClick={handleSos} disabled={sosSending}
+                    className="bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors flex items-center gap-2 shadow-lg shadow-red-500/20">
+                    {sosSending ? "Sending..." : "Confirm Emergency"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

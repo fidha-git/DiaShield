@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import API from "../services/api";
 
 export default function PredictionHistory() {
-
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,106 +10,95 @@ export default function PredictionHistory() {
   }, []);
 
   const fetchHistory = async () => {
-
     try {
-
-      const response =
-        await API.get(
-          "/prediction-history"
-        );
-
-      console.log(
-        "History:",
-        response.data
-      );
-
-      setHistory(
-        Array.isArray(response.data)
-          ? response.data
-          : []
-      );
-
-    } catch(error) {
-
-      console.log(
-        "History Error:",
-        error.response?.data
-      );
-
+      const response = await API.get("/prediction-history");
+      setHistory(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
     } finally {
-
       setLoading(false);
-
     }
   };
 
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 w-64 bg-sky-100 rounded-lg" />
+            <div className="h-4 w-96 bg-sky-100 rounded-lg" />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-28 bg-sky-100 rounded-2xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-
-    <div className="p-6 min-h-screen">
-
-      <h1 className="text-3xl font-bold text-white mb-6">
-        Prediction History
-      </h1>
-
-      {loading ? (
-
-        <p className="text-white">
-          Loading...
-        </p>
-
-      ) : history.length === 0 ? (
-
-        <div className="glass-card p-6 rounded-xl text-white">
-          No prediction history available
+    <div className="space-y-6 animate-fade-in">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight">Prediction History</h1>
+          <p className="text-slate-400 mt-2 text-base">Your past diabetes risk assessments and AI analysis results.</p>
         </div>
 
-      ) : (
-
-        <div className="space-y-4">
-
-          {history.map((item,index)=>(
-
-            <div
-              key={index}
-              className="glass-card p-5 rounded-xl"
-            >
-
-              <p className="text-white">
-                Prediction:
-                <span className="text-cyan-400 ml-2">
-                  {item.prediction_result}
-                </span>
-              </p>
-
-              <p className="text-white">
-                Risk:
-                <span className="ml-2">
-                  {item.risk_level}
-                </span>
-              </p>
-
-              <p className="text-white">
-                Probability:
-                <span className="ml-2">
-                  {(item.probability*100).toFixed(2)}%
-                </span>
-              </p>
-
-              <p className="text-gray-400 mt-2">
-                {new Date(
-                  item.created_at
-                ).toLocaleString()}
-              </p>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      )}
-
+        {history.length === 0 ? (
+          <div className="text-center py-16 bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30">
+            <span className="material-symbols-outlined text-5xl text-slate-300 mb-4 block">query_stats</span>
+            <p className="text-slate-400 text-base font-medium">No predictions yet</p>
+            <p className="text-slate-500 text-sm mt-1">Complete a risk assessment to see your history here.</p>
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {history.map((item, index) => {
+              const risk = Math.round((item.probability || 0) * 100);
+              const isPositive = item.prediction_result === "Positive" || item.prediction_result === "1" || item.prediction_result === 1;
+              const isHigh = item.risk_level === "High";
+              const isModerate = item.risk_level === "Moderate";
+              return (
+                <div
+                  key={index}
+                  className="bg-white border border-sky-100 rounded-2xl p-6 shadow-lg shadow-blue-200/30 transition-all duration-200 hover:shadow-xl hover:border-sky-200"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center gap-5">
+                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${
+                      isHigh ? "bg-red-50" : isModerate ? "bg-amber-50" : "bg-green-50"
+                    }`}>
+                      <span className={`material-symbols-outlined text-2xl ${
+                        isHigh ? "text-red-500" : isModerate ? "text-amber-500" : "text-green-500"
+                      }`}>neurology</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">
+                            {isPositive ? "Diabetes Risk Detected" : "No Diabetes Risk Detected"}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {new Date(item.created_at).toLocaleDateString("en-US", {
+                              month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit"
+                            })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${
+                            isHigh ? "bg-red-50 text-red-600" : isModerate ? "bg-amber-50 text-amber-600" : "bg-green-50 text-green-600"
+                          }`}>
+                            {item.risk_level || "Unknown"}
+                          </span>
+                          <span className="text-2xl font-bold text-sky-600">{risk}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
-
   );
 }
+

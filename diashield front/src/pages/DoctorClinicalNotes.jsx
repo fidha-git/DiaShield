@@ -9,9 +9,15 @@ import {
 } from "../services/doctorService";
 import { getErrorMessage } from "../services/api";
 
+function formatDate(dateStr) {
+  if (!dateStr) return "—";
+  const d = new Date(dateStr);
+  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+}
+
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
-  const bg = type === "success" ? "bg-green-500/20 border-green-500/30 text-green-300" : "bg-red-500/20 border-red-500/30 text-red-300";
+  const bg = type === "success" ? "bg-green-50 border-green-200 text-green-600" : "bg-red-50 border-red-200 text-red-600";
   return (
     <div className={`fixed top-6 right-6 z-[100] flex items-center gap-3 px-5 py-3 rounded-xl border backdrop-blur-xl ${bg} shadow-2xl animate-slide-down`}>
       <span className="material-symbols-outlined text-lg">{type === "success" ? "check_circle" : "error"}</span>
@@ -93,38 +99,50 @@ export default function DoctorClinicalNotes() {
   const noNoteAppts = completedAppts.filter((a) => !notes[a.id]);
 
   return (
-    <div className="p-unit-6 md:p-gutter min-h-screen">
-      <div className="max-w-container-max mx-auto">
+    <div className="space-y-6">
+      <div className="max-w-7xl mx-auto">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-        <header className="mb-unit-8">
-          <h2 className="font-display-lg text-[32px] md:text-display-lg text-on-surface">Clinical Notes</h2>
-          <p className="font-body-md text-on-surface-variant mt-1">Create and manage patient clinical notes.</p>
+        <header className="mb-8">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 border border-sky-200 text-sky-700 text-[10px] font-bold uppercase tracking-widest mb-4">
+            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+            Doctor Portal
+          </div>
+          <h1 className="text-3xl md:text-[42px] font-bold tracking-tight leading-tight">
+            <span className="text-gradient">Clinical Notes</span>
+          </h1>
+          <p className="text-slate-400 mt-2 text-base">Create and manage patient clinical notes.</p>
         </header>
 
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <span className="text-on-surface-variant font-headline-md">Loading...</span>
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 animate-pulse">
+                <div className="h-4 w-48 rounded bg-sky-100 mb-4" />
+                <div className="h-3 w-full rounded bg-sky-50 mb-2" />
+                <div className="h-3 w-3/4 rounded bg-sky-50" />
+              </div>
+            ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-unit-6">
-            <div className="glass-card rounded-xl p-unit-6">
-              <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-green-400">note_add</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-green-600">note_add</span>
                 Completed Appointments (No Note)
               </h3>
               {noNoteAppts.length === 0 ? (
-                <p className="text-on-surface-variant font-body-md py-8 text-center">All done! No pending notes.</p>
+                <p className="text-slate-500 font-body-md py-8 text-center">All done! No pending notes.</p>
               ) : (
                 <div className="space-y-3">
                   {noNoteAppts.map((apt) => (
-                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50">
                       <div>
-                        <p className="font-label-md text-on-surface">{apt.doctor_name || `Appointment #${apt.id}`}</p>
-                        <p className="font-body-sm text-on-surface-variant text-[11px]">{new Date(apt.date).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                        <p className="text-xs text-slate-500">{formatDate(apt.date)}</p>
                       </div>
                       <button onClick={() => setNoteModal({ appointment: apt, existing: null })}
-                        className="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-400 text-[11px] font-label-md hover:bg-cyan-500/30 transition-colors">
+                        className="px-3 py-1.5 rounded-lg bg-sky-100 text-sky-600 text-xs font-semibold hover:bg-sky-200 transition-colors">
                         Add Note
                       </button>
                     </div>
@@ -133,23 +151,23 @@ export default function DoctorClinicalNotes() {
               )}
             </div>
 
-            <div className="glass-card rounded-xl p-unit-6">
-              <h3 className="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-cyan-400">description</span>
+            <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
+              <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-sky-500">description</span>
                 Existing Notes
               </h3>
               {existingNoteAppts.length === 0 ? (
-                <p className="text-on-surface-variant font-body-md py-8 text-center">No notes created yet.</p>
+                <p className="text-slate-500 font-body-md py-8 text-center">No notes created yet.</p>
               ) : (
                 <div className="space-y-3">
                   {existingNoteAppts.map((apt) => (
-                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5">
+                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50">
                       <div>
-                        <p className="font-label-md text-on-surface">{apt.doctor_name || `Appointment #${apt.id}`}</p>
-                        <p className="font-body-sm text-on-surface-variant text-[11px]">{new Date(apt.date).toLocaleDateString()}</p>
+                        <p className="text-sm font-semibold text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                        <p className="text-xs text-slate-500">{formatDate(apt.date)}</p>
                       </div>
                       <button onClick={() => setNoteModal({ appointment: apt, existing: notes[apt.id] })}
-                        className="px-3 py-1.5 rounded-lg bg-purple-500/20 text-purple-400 text-[11px] font-label-md hover:bg-purple-500/30 transition-colors">
+                        className="px-3 py-1.5 rounded-lg bg-sky-100 text-sky-600 text-xs font-semibold hover:bg-sky-200 transition-colors">
                         View / Edit
                       </button>
                     </div>
@@ -193,18 +211,18 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="glass-card rounded-xl p-6 w-full max-w-lg border border-white/10 shadow-2xl animate-scale-in overflow-y-auto max-h-[90vh]"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 w-full max-w-lg animate-scale-in overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
-            <span className="material-symbols-outlined text-cyan-400">description</span>
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <span className="material-symbols-outlined text-sky-500">description</span>
             {existing ? "Edit Clinical Note" : "Add Clinical Note"}
           </h3>
-          <button onClick={onClose} className="text-on-surface-variant hover:text-on-surface"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900"><span className="material-symbols-outlined">close</span></button>
         </div>
-        <p className="font-body-sm text-on-surface-variant mb-4">
-          Appointment #{appointment.id} — {new Date(appointment.date).toLocaleDateString()}
+        <p className="text-xs text-slate-500 mb-4">
+          Appointment #{appointment.id} — {formatDate(appointment.date)}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Field label="Diagnosis" id="diagnosis" name="diagnosis" required value={form.diagnosis} onChange={handleChange} />
@@ -215,16 +233,16 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
             <div>
               {existing && (
                 <button type="button" onClick={() => onDelete(appointment.id)}
-                  className="px-4 py-2 rounded-lg bg-red-500/20 text-red-400 font-label-md hover:bg-red-500/30 transition-colors">
+                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors">
                   Delete Note
                 </button>
               )}
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-white/10 text-on-surface-variant font-label-md hover:bg-white/5">Cancel</button>
+                className="px-4 py-2 rounded-lg border border-sky-100 text-slate-500 text-xs font-semibold hover:bg-sky-50">Cancel</button>
               <button type="submit" disabled={saving}
-                className="px-5 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-label-md hover:from-cyan-500 hover:to-blue-500 transition-all disabled:opacity-50 flex items-center gap-2">
+                className="px-5 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-xs font-semibold hover:from-sky-600 hover:to-cyan-600 transition-all disabled:opacity-50 flex items-center gap-2">
                 {saving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {saving ? "Saving..." : existing ? "Update Note" : "Create Note"}
               </button>
@@ -239,14 +257,15 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
 function Field({ label, id, type, ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="font-label-md text-on-surface-variant text-[11px]">{label}</label>
+      <label htmlFor={id} className="text-xs font-semibold text-slate-500">{label}</label>
       {type === "textarea" ? (
         <textarea id={id} rows={3} {...props}
-          className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-cyan-400/50 text-sm resize-none" />
+          className="px-3 py-2 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-400/50 text-sm resize-none" />
       ) : (
         <input id={id} {...props}
-          className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-cyan-400/50 text-sm" />
+          className="px-3 py-2 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-400/50 text-sm" />
       )}
     </div>
   );
 }
+

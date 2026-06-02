@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useState } from "react";
 import {
   getMedicalHistory,
@@ -8,6 +6,7 @@ import {
   deleteMedicalHistory,
 } from "../services/medicalHistoryService";
 import API from "../services/api";
+import { EmptyHealthRecords } from "../components/Illustrations";
 
 export default function MedicalHistory() {
   const [historyRecords, setHistoryRecords] = useState([]);
@@ -114,6 +113,7 @@ export default function MedicalHistory() {
 
   // Delete record
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this record? This cannot be undone.")) return;
     setError("");
     setSuccess("");
     try {
@@ -127,7 +127,7 @@ export default function MedicalHistory() {
 
   // UI
   return (
-    <div className="p-unit-6 md:p-gutter min-h-screen">
+    <div className="space-y-6">
       <div className="max-w-container-max mx-auto">
         <header className="mb-unit-8">
           <h2 className="font-display-lg text-[32px] md:text-display-lg text-on-surface">Medical History</h2>
@@ -162,7 +162,11 @@ export default function MedicalHistory() {
         {/* Medical History List */}
         <div className="space-y-4">
           {!loading && historyRecords.length === 0 && (
-            <div className="text-on-surface-variant">No medical history records available</div>
+            <div className="text-center py-16">
+              <EmptyHealthRecords className="w-36 h-28 mx-auto mb-4 opacity-60" />
+              <p className="text-on-surface-variant font-medium">No medical history records available</p>
+              <p className="text-on-surface-variant/60 text-sm mt-1">Add your first medical history record to get started.</p>
+            </div>
           )}
           {historyRecords.map((rec) => (
             <div key={rec.id} className="glass-card rounded-xl p-unit-6 flex flex-col md:flex-row md:items-start justify-between gap-4">
@@ -300,3 +304,4 @@ export default function MedicalHistory() {
     </div>
   );
 }
+

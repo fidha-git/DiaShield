@@ -11,7 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import MedicalHistory from './pages/MedicalHistory';
+import MedicalHistory from './pages/HealthTimeline';
 import HealthRecords from './pages/HealthRecords';
 import DiabetesPrediction from './pages/DiabetesPrediction';
 import Appointments from './pages/Appointments';
@@ -23,6 +23,8 @@ import AdminDoctors from './pages/AdminDoctors';
 import AdminAppointments from './pages/AdminAppointments';
 import AdminPredictions from './pages/AdminPredictions';
 import AdminActivityLogs from './pages/AdminActivityLogs';
+import AdminPatients from './pages/AdminPatients';
+import AdminSettings from './pages/AdminSettings';
 
 import DoctorRoute from './components/DoctorRoute';
 import DoctorLayout from './components/DoctorLayout';
@@ -76,9 +78,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="/admin/doctors" element={<AdminDoctors />} />
+          <Route path="/admin/patients" element={<AdminPatients />} />
           <Route path="/admin/appointments" element={<AdminAppointments />} />
           <Route path="/admin/predictions" element={<AdminPredictions />} />
           <Route path="/admin/activity-logs" element={<AdminActivityLogs />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
         </Route>
 
         {/* Protected Doctor Routes */}

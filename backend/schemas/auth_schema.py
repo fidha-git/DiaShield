@@ -30,9 +30,9 @@ class UserRegister(BaseModel):
 # Login Request Schema
 # -----------------------------
 class LoginRequest(BaseModel):
-    email: EmailStr = Field(
+    email: str = Field(
         ...,
-        description="User email address"
+        description="User email or username"
     )
 
     password: str = Field(

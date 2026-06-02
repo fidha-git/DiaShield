@@ -32,13 +32,12 @@ def forgot_password_endpoint(
     db: Session = Depends(get_db)
 ):
     try:
-        result = forgot_password(
+        forgot_password(
             request.email,
             db
         )
 
-        # Returning token temporarily for testing
-        return result
+        return {"message": "If the email exists, a reset link has been sent."}
 
     except HTTPException as e:
         raise e
