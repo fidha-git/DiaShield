@@ -8,6 +8,7 @@ import {
   deletePrescription,
 } from "../services/doctorService";
 import { getErrorMessage } from "../services/api";
+import { PageHeader } from "../components/ui/DesignSystem";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -130,19 +131,14 @@ export default function DoctorPrescriptions() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="page-container">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-        <header className="mb-8">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 border border-sky-200 text-sky-700 text-[10px] font-bold uppercase tracking-widest mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-            Doctor Portal
-          </div>
-          <h1 className="text-3xl md:text-[42px] font-bold tracking-tight leading-tight">
-            <span className="text-gradient">Prescriptions</span>
-          </h1>
-          <p className="text-slate-400 mt-2 text-base">Manage all prescriptions created during appointments.</p>
-        </header>
+        <PageHeader
+          title="Prescriptions"
+          subtitle="Manage all prescriptions created during appointments."
+          icon="medication"
+        />
 
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <input type="text" placeholder="Search by patient name..." value={search}

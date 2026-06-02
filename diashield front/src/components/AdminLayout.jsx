@@ -176,7 +176,7 @@ export default function AdminLayout() {
         <div className="pt-4 mt-4 border-t border-sky-100 space-y-2">
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-600 hover:bg-white hover:text-slate-800 transition-colors dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="btn-secondary w-full justify-start text-left"
             title={collapsed ? "Patient Portal" : undefined}
           >
             <span className="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -185,7 +185,7 @@ export default function AdminLayout() {
 
           <button
             onClick={() => setShowSignOut(true)}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-rose-500 text-white hover:bg-rose-600 transition-colors shadow-sm shadow-rose-500/20"
+            className="btn-danger w-full justify-start"
             title={collapsed ? "Sign Out" : undefined}
           >
             <span className="material-symbols-outlined text-[20px]">logout</span>

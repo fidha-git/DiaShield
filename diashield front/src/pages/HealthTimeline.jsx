@@ -86,7 +86,7 @@ export default function HealthTimeline() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-5xl mx-auto space-y-10">
+      <div className="page-container space-y-10">
 
         {/* Header */}
         <div>

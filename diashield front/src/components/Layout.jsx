@@ -110,7 +110,7 @@ export default function Layout() {
           ))}
           <button
             onClick={() => navigate("/profile")}
-            className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-slate-400 dark:text-slate-500 hover:bg-sky-100/50 dark:hover:bg-slate-800/30 hover:text-slate-700 dark:hover:text-slate-300 transition-all mt-6"
+            className="btn-secondary w-full justify-start text-left mt-6"
           >
             <span className="material-symbols-outlined">settings</span>
             Settings
@@ -123,7 +123,7 @@ export default function Layout() {
               localStorage.removeItem("role");
               navigate("/login");
             }}
-            className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+            className="btn-danger w-full justify-start mt-2"
           >
             <span className="material-symbols-outlined">logout</span>
             Sign Out

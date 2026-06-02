@@ -170,7 +170,7 @@ export default function Profile() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="page-container space-y-8">
 
         {/* ─── Hero Profile Section ─── */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600/10 via-cyan-500/5 to-transparent border border-sky-100 shadow-xl shadow-blue-200/30 p-6 md:p-8">

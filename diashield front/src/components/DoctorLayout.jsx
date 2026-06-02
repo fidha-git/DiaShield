@@ -46,7 +46,7 @@ export default function DoctorLayout() {
           <div className="border-t border-sky-100 dark:border-slate-800/80 my-4" />
           <button
             onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-3 p-3 rounded-xl w-full text-left text-slate-400 dark:text-slate-500 hover:bg-sky-100/50 dark:hover:bg-slate-800/30 hover:text-slate-700 dark:hover:text-slate-300 transition-all mt-2"
+            className="btn-secondary w-full justify-start text-left mt-2"
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Back to Patient Portal
@@ -58,7 +58,7 @@ export default function DoctorLayout() {
               localStorage.removeItem("role");
               navigate("/login");
             }}
-            className="w-full flex items-center gap-3 p-3 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors mt-2"
+            className="btn-danger w-full justify-start mt-2"
           >
             <span className="material-symbols-outlined">logout</span>
             Sign Out

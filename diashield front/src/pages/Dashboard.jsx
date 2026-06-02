@@ -178,7 +178,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 animate-fade-in transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="page-container space-y-6">
 
         {/* ───────────── HERO ───────────── */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 p-[2px] shadow-2xl shadow-sky-500/20 dark:shadow-sky-500/10">

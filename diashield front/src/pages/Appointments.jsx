@@ -248,7 +248,7 @@ export default function Appointments() {
 
   return (
     <div className="space-y-6 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto animate-fade-in">
+      <div className="page-container animate-fade-in">
 
         {/* Header */}
         <header className="mb-12">

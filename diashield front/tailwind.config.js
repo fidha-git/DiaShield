@@ -17,16 +17,20 @@ export default {
         surface: "#F0F9FF",
       },
       borderRadius: {
-        DEFAULT: "0.25rem",
-        lg: "0.5rem",
-        xl: "0.75rem",
-        "2xl": "1rem",
-        "3xl": "1.25rem",
-        full: "9999px"
+        DEFAULT: "0.5rem",
+        lg: "0.75rem",
+        xl: "1.125rem",
+        "2xl": "1.25rem",
+        "3xl": "1.5rem",
+        full: "9999px",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         display: ["Inter", "system-ui", "sans-serif"],
+      },
+      boxShadow: {
+        soft: "0 20px 45px rgba(15, 23, 42, 0.08)",
+        elevated: "0 24px 64px rgba(15, 23, 42, 0.12)",
       },
       animation: {
         "scale-in": "scaleIn 0.2s ease-out",

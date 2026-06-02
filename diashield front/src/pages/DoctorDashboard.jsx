@@ -116,7 +116,7 @@ export default function DoctorDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="page-container">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
         <header className="mb-8">

@@ -227,7 +227,7 @@ export default function DiabetesPrediction() {
         <div className="absolute bottom-0 -right-40 w-[600px] h-[600px] bg-gradient-to-tl from-blue-200/20 to-sky-200/30 rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 md:py-10">
+      <div className="page-container">
         {/* ── Hero Section ── */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-500/10 via-cyan-500/5 to-transparent border border-sky-100/80 p-8 md:p-10 mb-10 shadow-lg shadow-sky-200/20">
           {/* Animated gradient orbs */}
