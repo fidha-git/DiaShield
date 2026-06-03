@@ -113,7 +113,7 @@ export default function DoctorClinicalNotes() {
         {loading ? (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 animate-pulse">
+              <div key={i} className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 animate-pulse">
                 <div className="h-4 w-48 rounded bg-sky-100 mb-4" />
                 <div className="h-3 w-full rounded bg-sky-50 mb-2" />
                 <div className="h-3 w-3/4 rounded bg-sky-50" />
@@ -122,23 +122,23 @@ export default function DoctorClinicalNotes() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-              <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-green-600">note_add</span>
                 Completed Appointments (No Note)
               </h3>
               {noNoteAppts.length === 0 ? (
-                <p className="text-slate-500 font-body-md py-8 text-center">All done! No pending notes.</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm py-8 text-center">All done! No pending notes.</p>
               ) : (
                 <div className="space-y-3">
                   {noNoteAppts.map((apt) => (
-                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50">
+                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50 dark:bg-slate-800/50">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
-                        <p className="text-xs text-slate-500">{formatDate(apt.date)}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500">{formatDate(apt.date)}</p>
                       </div>
                       <button onClick={() => setNoteModal({ appointment: apt, existing: null })}
-                        className="px-3 py-1.5 rounded-lg bg-sky-100 text-sky-600 text-xs font-semibold hover:bg-sky-200 transition-colors">
+                        className="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold hover:bg-sky-200 dark:hover:bg-sky-500/30 transition-colors">
                         Add Note
                       </button>
                     </div>
@@ -147,23 +147,23 @@ export default function DoctorClinicalNotes() {
               )}
             </div>
 
-            <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-              <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-sky-500">description</span>
                 Existing Notes
               </h3>
               {existingNoteAppts.length === 0 ? (
-                <p className="text-slate-500 font-body-md py-8 text-center">No notes created yet.</p>
+                <p className="text-slate-500 dark:text-slate-400 text-sm py-8 text-center">No notes created yet.</p>
               ) : (
                 <div className="space-y-3">
                   {existingNoteAppts.map((apt) => (
-                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50">
+                    <div key={apt.id} className="flex items-center justify-between p-3 rounded-lg bg-sky-50 dark:bg-slate-800/50">
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
-                        <p className="text-xs text-slate-500">{formatDate(apt.date)}</p>
+                        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500">{formatDate(apt.date)}</p>
                       </div>
                       <button onClick={() => setNoteModal({ appointment: apt, existing: notes[apt.id] })}
-                        className="px-3 py-1.5 rounded-lg bg-sky-100 text-sky-600 text-xs font-semibold hover:bg-sky-200 transition-colors">
+                        className="px-3 py-1.5 rounded-lg bg-sky-100 dark:bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold hover:bg-sky-200 dark:hover:bg-sky-500/30 transition-colors">
                         View / Edit
                       </button>
                     </div>
@@ -208,16 +208,16 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 w-full max-w-lg animate-scale-in overflow-y-auto max-h-[90vh]"
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-lg animate-scale-in overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-500">description</span>
             {existing ? "Edit Clinical Note" : "Add Clinical Note"}
           </h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-900"><span className="material-symbols-outlined">close</span></button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"><span className="material-symbols-outlined">close</span></button>
         </div>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
           Appointment #{appointment.id} — {formatDate(appointment.date)}
         </p>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -229,16 +229,16 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
             <div>
               {existing && (
                 <button type="button" onClick={() => onDelete(appointment.id)}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors">
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors">
                   Delete Note
                 </button>
               )}
             </div>
             <div className="flex gap-3">
               <button type="button" onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-sky-100 text-slate-500 text-xs font-semibold hover:bg-sky-50">Cancel</button>
+                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
               <button type="submit" disabled={saving}
-                className="px-5 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-xs font-semibold hover:from-sky-600 hover:to-cyan-600 transition-all disabled:opacity-50 flex items-center gap-2">
+                className="btn-primary disabled:opacity-50 text-xs">
                 {saving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {saving ? "Saving..." : existing ? "Update Note" : "Create Note"}
               </button>
@@ -253,13 +253,13 @@ function NoteFormModal({ appointment, existing, onClose, onSave, onDelete }) {
 function Field({ label, id, type, ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-xs font-semibold text-slate-500">{label}</label>
+      <label htmlFor={id} className="text-xs font-semibold text-slate-500 dark:text-slate-400">{label}</label>
       {type === "textarea" ? (
         <textarea id={id} rows={3} {...props}
-          className="px-3 py-2 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-400/50 text-sm resize-none" />
+          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm text-sm resize-none" />
       ) : (
         <input id={id} {...props}
-          className="px-3 py-2 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 placeholder-slate-400 focus:outline-none focus:border-sky-400/50 text-sm" />
+          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm text-sm" />
       )}
     </div>
   );

@@ -22,6 +22,7 @@ import models.doctor_model
 import models.doctor_availability_model
 import models.doctor_note_model
 import models.prescription_model
+import models.laboratory_report_model
 
 
 import models.patient_model
@@ -74,6 +75,10 @@ from routes.patient_dashboard_routes import (
 )
 from routes.prediction_history_routes import (
     router as prediction_history_router
+)
+
+from routes.laboratory_report_routes import (
+    router as laboratory_report_router
 )
 
 
@@ -210,6 +215,11 @@ app.include_router(
 app.include_router(
     prediction_history_router,
     tags=["Prediction History"]
+)
+
+app.include_router(
+    laboratory_report_router,
+    tags=["Health Records - Laboratory Reports"]
 )
 
 # Register analytics routes

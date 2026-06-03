@@ -17,8 +17,10 @@ export default function DoctorLayout() {
 
   return (
     <div className="portal-shell">
-      <div className="portal-sidebar w-[280px] flex flex-col p-6">
-        <div className="flex items-center gap-3 mb-8">
+      <div className="portal-sidebar w-[280px] flex flex-col p-6 relative">
+        <div className="absolute -top-20 -right-20 w-40 h-40 bg-sky-300/20 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-300/20 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
             <span className="material-symbols-outlined text-white text-2xl">stethoscope</span>
           </div>
@@ -27,7 +29,7 @@ export default function DoctorLayout() {
             <p className="text-slate-400 dark:text-slate-500 text-[11px] font-medium uppercase tracking-wider">Doctor Portal</p>
           </div>
         </div>
-        <div className="space-y-1">
+        <div className="relative z-10 space-y-1">
           {sidebarLinks.map((link) => (
             <NavLink
               key={link.path}
@@ -43,10 +45,9 @@ export default function DoctorLayout() {
               <span className="text-sm">{link.label}</span>
             </NavLink>
           ))}
-          <div className="border-t border-sky-100 dark:border-slate-800/80 my-4" />
           <button
             onClick={() => navigate("/dashboard")}
-            className="btn-secondary w-full justify-start text-left mt-2"
+            className="btn-secondary w-full justify-start text-left mt-6"
           >
             <span className="material-symbols-outlined">arrow_back</span>
             Back to Patient Portal

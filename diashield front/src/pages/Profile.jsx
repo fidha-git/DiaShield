@@ -208,35 +208,35 @@ export default function Profile() {
                 </h1>
                 <div className="flex items-center gap-2">
                   {f.blood_group && (
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-bold border border-red-200">
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[11px] font-bold border border-red-200">
                       <span className="material-symbols-outlined text-[14px]">bloodtype</span>
                       {f.blood_group}
                     </span>
                   )}
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[11px] font-bold border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold border border-emerald-200">
                     <span className="material-symbols-outlined text-[14px]">verified_user</span>
                     Verified
                   </span>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2">
-                <span className="text-sm text-slate-400 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px] text-slate-400">badge</span>
+                <span className="text-sm text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500">badge</span>
                   PID: {patientId || 'N/A'}
                 </span>
-                <span className="text-sm text-slate-400 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px] text-slate-400">local_hospital</span>
+                <span className="text-sm text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500">local_hospital</span>
                   {f.primary_clinic || 'No clinic assigned'}
                 </span>
                 {f.gender && (
-                  <span className="text-sm text-slate-400 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px] text-slate-400">wc</span>
+                  <span className="text-sm text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500">wc</span>
                     {f.gender}
                   </span>
                 )}
                 {f.age && (
-                  <span className="text-sm text-slate-400 flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px] text-slate-400">cake</span>
+                  <span className="text-sm text-slate-400 dark:text-slate-500 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-slate-400 dark:text-slate-500">cake</span>
                     {f.age} yrs
                   </span>
                 )}
@@ -292,11 +292,11 @@ export default function Profile() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-3xl" />
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-5">
-                  <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span className="material-symbols-outlined text-red-500 text-xl">emergency</span>
                     Emergency Contact
                   </h3>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[10px] font-bold border border-red-200">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-bold border border-red-200">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                     PRIMARY
                   </span>
@@ -310,14 +310,14 @@ export default function Profile() {
             </div>
 
             {/* Insurance Card */}
-            <div className="bg-white border border-sky-100 rounded-2xl p-6 shadow-lg shadow-blue-200/30">
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-2xl p-6 shadow-lg shadow-blue-200/30">
               <div className="flex items-center justify-between mb-5">
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                   <span className="material-symbols-outlined text-sky-600 text-xl">receipt_long</span>
                   Insurance Coverage
                 </h3>
                 {f.insurance_provider && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-200">
                     <span className="material-symbols-outlined text-[12px]">check_circle</span>
                     ACTIVE
                   </span>
@@ -336,22 +336,22 @@ export default function Profile() {
       {/* ─── Edit Modal ─── */}
       {editMode && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm p-4 pt-12 overflow-y-auto" onClick={() => setEditMode(false)}>
-          <div className="bg-white border border-sky-100 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
             <form onSubmit={handleSave}>
               <div className="p-6 md:p-8 space-y-8">
                 {/* Header */}
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sky-600">edit</span>
                     Edit Profile
                   </h2>
-                  <button type="button" onClick={() => setEditMode(false)} className="text-slate-500 hover:text-slate-900 transition-colors">
+                  <button type="button" onClick={() => setEditMode(false)} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
                     <span className="material-symbols-outlined">close</span>
                   </button>
                 </div>
 
-                {error && <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-sm">{error}</div>}
-                {success && <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 text-sm">{success}</div>}
+                {error && <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 text-sm">{error}</div>}
+                {success && <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-600 dark:text-emerald-400 text-sm">{success}</div>}
 
                 {/* Personal Demographics */}
                 <SectionForm title="Personal Demographics" icon="badge">
@@ -399,7 +399,7 @@ export default function Profile() {
               {/* Footer */}
               <div className="px-6 md:px-8 py-5 border-t border-sky-100 flex items-center justify-end gap-4">
                 <button type="button" onClick={() => setEditMode(false)}
-                  className="px-5 py-2.5 rounded-xl border border-sky-100 text-slate-500 font-semibold text-sm bg-white hover:bg-sky-50 transition-all">
+                  className="px-5 py-2.5 rounded-xl border border-sky-100 text-slate-500 dark:text-slate-400 font-semibold text-sm bg-white dark:bg-[#0F172A]/90 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all">
                   Cancel
                 </button>
                 <button type="submit" disabled={saving}
@@ -426,9 +426,9 @@ function HealthCard({ icon, label, value, sub, color, iconColor }) {
         <div className={`w-9 h-9 rounded-xl ${iconColor} flex items-center justify-center mb-3`}>
           <span className="material-symbols-outlined text-lg">{icon}</span>
         </div>
-        <p className="text-slate-400 text-[10px] font-semibold uppercase tracking-widest mb-0.5">{label}</p>
-        <p className="text-2xl font-bold text-slate-900">{value}</p>
-        <p className="text-slate-400 text-xs mt-0.5">{sub}</p>
+        <p className="text-slate-400 dark:text-slate-500 text-[10px] font-semibold uppercase tracking-widest mb-0.5">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{value}</p>
+        <p className="text-slate-400 dark:text-slate-500 text-xs mt-0.5">{sub}</p>
       </div>
     </div>
   )
@@ -436,8 +436,8 @@ function HealthCard({ icon, label, value, sub, color, iconColor }) {
 
 function InfoCard({ title, icon, iconColor, children }) {
   return (
-    <div className="bg-white border border-sky-100 rounded-2xl p-6 shadow-lg shadow-blue-200/30">
-      <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 mb-5">
+    <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-2xl p-6 shadow-lg shadow-blue-200/30">
+      <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-5">
         <span className={`material-symbols-outlined text-xl ${iconColor}`}>{icon}</span>
         {title}
       </h3>
@@ -449,20 +449,20 @@ function InfoCard({ title, icon, iconColor, children }) {
 function InfoRow({ label, value }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-slate-500 font-medium uppercase tracking-wider">{label}</span>
-      <span className="text-sm text-slate-900 font-semibold text-right">{value}</span>
+      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{label}</span>
+      <span className="text-sm text-slate-900 dark:text-slate-100 font-semibold text-right">{value}</span>
     </div>
   )
 }
 
 function ContactDetail({ icon, label, value }) {
   return (
-    <div className="bg-[#F0F9FF] rounded-xl p-4 border border-sky-100">
+    <div className="bg-[#F0F9FF] dark:bg-cyan-900/20 rounded-xl p-4 border border-sky-100">
       <div className="flex items-center gap-2 mb-2">
-        <span className="material-symbols-outlined text-slate-400 text-base">{icon}</span>
-        <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">{label}</span>
+        <span className="material-symbols-outlined text-slate-400 dark:text-slate-500 text-base">{icon}</span>
+        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-sm text-slate-900 font-semibold">{value}</p>
+      <p className="text-sm text-slate-900 dark:text-slate-100 font-semibold">{value}</p>
     </div>
   )
 }
@@ -470,7 +470,7 @@ function ContactDetail({ icon, label, value }) {
 function SectionForm({ title, icon, children }) {
   return (
     <div>
-      <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-4 pb-3 border-b border-sky-100">
+      <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4 pb-3 border-b border-sky-100">
         <span className="material-symbols-outlined text-sky-600 text-lg">{icon}</span>
         {title}
       </h3>
@@ -482,9 +482,9 @@ function SectionForm({ title, icon, children }) {
 function Field({ label, name, type = "text", value, onChange, required }) {
   return (
     <div>
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">{label}</label>
+      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 block">{label}</label>
       <input type={type} name={name} value={value} onChange={onChange} required={required}
-        className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400" />
+        className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400" />
     </div>
   )
 }
@@ -492,9 +492,9 @@ function Field({ label, name, type = "text", value, onChange, required }) {
 function Select({ label, name, value, onChange, options }) {
   return (
     <div>
-      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">{label}</label>
+      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 block">{label}</label>
       <select name={name} value={value} onChange={onChange}
-        className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors">
+        className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors">
         <option value="">Select...</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
       </select>

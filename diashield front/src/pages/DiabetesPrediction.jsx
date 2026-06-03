@@ -267,7 +267,7 @@ export default function DiabetesPrediction() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
           {/* ── LEFT: Input Form ── */}
           <div className="lg:col-span-3">
-            <div className="bg-white/80 backdrop-blur-xl border border-sky-100/80 rounded-3xl shadow-xl shadow-sky-200/20 overflow-hidden">
+            <div className="bg-white/80 dark:bg-[#0F172A]/85 backdrop-blur-xl border border-sky-100/80 rounded-3xl shadow-xl shadow-sky-200/20 overflow-hidden">
               {/* Gradient Header */}
               <div className="relative bg-gradient-to-r from-sky-500 to-cyan-500 px-6 py-5">
                 <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJhIiB4PSIwIiB5PSIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHBhdHRlcm5UcmFuc2Zvcm09InJvdGF0ZSg0NSkiPjxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNykiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjYSkiLz48L3N2Zz4=')] opacity-30" />
@@ -285,9 +285,9 @@ export default function DiabetesPrediction() {
                 {FIELDS.map((field) => (
                   <div
                     key={field.name}
-                    className="group relative bg-white rounded-xl border border-sky-100/70 p-4 transition-all duration-200 hover:border-sky-200 hover:shadow-md hover:shadow-sky-100/50"
+                    className="group relative bg-white dark:bg-[#0F172A]/90 rounded-xl border border-sky-100/70 p-4 transition-all duration-200 hover:border-sky-200 hover:shadow-md hover:shadow-sky-100/50"
                   >
-                    <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">
+                      <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                       <span className="material-symbols-outlined text-sky-500 text-[16px]">{field.icon}</span>
                       {field.label}
                     </label>
@@ -298,7 +298,7 @@ export default function DiabetesPrediction() {
                       onChange={handleChange}
                       step={field.step}
                       placeholder={field.placeholder}
-                      className="w-full bg-transparent text-slate-900 font-medium text-base outline-none border-b-2 border-sky-100 pb-1.5 focus:border-sky-500 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      className="w-full bg-transparent text-slate-900 dark:text-slate-100 font-medium text-base outline-none border-b-2 border-sky-100 pb-1.5 focus:border-sky-500 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
                   </div>
                 ))}
@@ -334,7 +334,7 @@ export default function DiabetesPrediction() {
 
           {/* ── RIGHT: Results Panel ── */}
           <div className="lg:col-span-2">
-            <div className="bg-white/80 backdrop-blur-xl border border-sky-100/80 rounded-3xl shadow-xl shadow-sky-200/20 p-8 h-full flex flex-col">
+            <div className="bg-white/80 dark:bg-[#0F172A]/85 backdrop-blur-xl border border-sky-100/80 rounded-3xl shadow-xl shadow-sky-200/20 p-8 h-full flex flex-col">
               <div className="flex items-center gap-3 mb-6">
                 <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-md shadow-sky-200">
                   <span className="material-symbols-outlined text-white text-lg">analytics</span>
@@ -361,7 +361,7 @@ export default function DiabetesPrediction() {
                     />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-5xl font-extrabold text-slate-900 tracking-tight">
+                    <span className="text-5xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
                       {hasPredicted ? (
                         <AnimatedCounter key={gaugeValue} target={gaugeValue} suffix="%" />
                       ) : (
@@ -382,9 +382,9 @@ export default function DiabetesPrediction() {
 
               {/* Confidence Bar */}
               <div className="mb-6">
-                <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+                  <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-1.5">
                   <span>Confidence Score</span>
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300">
                     {hasPredicted
                       ? confidenceScore.toFixed(1) + "%"
                       : "—"}
@@ -405,11 +405,11 @@ export default function DiabetesPrediction() {
                     {gaugeValue < 20 ? "check_circle" : gaugeValue < 50 ? "info" : "warning"}
                   </span>
                   <div>
-                    <p className="text-sm font-semibold text-slate-700">Prediction Outcome</p>
+                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Prediction Outcome</p>
                     <p className={`text-lg font-bold mt-0.5 ${riskMeta.color}`}>
                       {predictionResult.prediction}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
                       {gaugeValue < 20
                         ? "Your risk profile appears favorable. Continue maintaining a healthy lifestyle."
                         : gaugeValue < 50
@@ -423,7 +423,7 @@ export default function DiabetesPrediction() {
               {/* History Link */}
               <Link
                 to="/history"
-                className="group flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-sky-100 text-sky-600 text-sm font-semibold transition-all duration-200 hover:bg-sky-50 hover:border-sky-200 hover:shadow-sm"
+                className="group flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-sky-100 text-sky-600 text-sm font-semibold transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30 hover:border-sky-200 hover:shadow-sm"
               >
                 <span className="material-symbols-outlined text-lg group-hover:translate-x-[-2px] transition-transform">history</span>
                 View Prediction History

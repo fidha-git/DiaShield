@@ -33,14 +33,14 @@ function Toast({ message, type, onClose }) {
 
 function StatCard({ icon, label, value, color, onClick }) {
   return (
-    <div onClick={onClick} className="relative group bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 hover:-translate-y-0.5 transition-all duration-300 p-5 flex items-center gap-4 cursor-pointer overflow-hidden">
-      <div className="absolute -top-6 -right-6 w-16 h-16 bg-sky-50 rounded-full blur-2xl group-hover:bg-sky-100 transition-all duration-500" />
+    <div onClick={onClick} className="relative group bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 hover:-translate-y-0.5 transition-all duration-300 p-5 flex items-center gap-4 cursor-pointer overflow-hidden">
+      <div className="absolute -top-6 -right-6 w-16 h-16 bg-sky-50 dark:bg-sky-500/5 rounded-full blur-2xl group-hover:bg-sky-100 dark:group-hover:bg-sky-500/10 transition-all duration-500" />
       <div className={`relative z-10 w-12 h-12 rounded-2xl flex items-center justify-center ${color}`}>
         <span className="material-symbols-outlined text-xl">{icon}</span>
       </div>
       <div className="relative z-10">
-        <span className="block text-[28px] font-bold text-slate-900 leading-none mb-1">{value}</span>
-        <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
+        <span className="block text-[28px] font-bold text-slate-900 dark:text-slate-100 leading-none mb-1">{value}</span>
+        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">{label}</p>
       </div>
     </div>
   );
@@ -124,47 +124,47 @@ export default function DoctorDashboard() {
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
             Doctor Portal
           </div>
-          <h1 className="text-[32px] md:text-[42px] font-bold tracking-tight leading-tight">
-            Welcome, Dr.{' '}
+          <h1 className="hero-title text-[30px] md:text-[44px]">
+            Good {new Date().getHours() < 12 ? "Morning" : new Date().getHours() < 17 ? "Afternoon" : "Evening"}, Dr.{' '}
             <span className="text-gradient">{profile?.name || "Doctor"}</span>
           </h1>
-          <p className="text-slate-400 mt-2 text-base">
-            {profile?.specialization} &middot; {profile?.hospital}
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-base">
+            {profile?.specialization && <>{profile.specialization} &middot; </>}{profile?.hospital || "Hospital"}
           </p>
         </header>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatCard icon="calendar_month" label="Total Appointments" value={totalSlots} color="bg-gradient-to-br from-sky-100 to-sky-200 text-sky-600" />
-          <StatCard icon="upcoming" label="Upcoming" value={booked} color="bg-gradient-to-br from-green-100 to-green-200 text-green-600" onClick={() => navigate("/doctor/appointments")} />
-          <StatCard icon="check_circle" label="Completed" value={completed} color="bg-gradient-to-br from-cyan-100 to-cyan-200 text-cyan-600" />
-          <StatCard icon="event_available" label="Available Slots" value={availableSlots} color="bg-gradient-to-br from-sky-100 to-sky-200 text-sky-600" onClick={() => navigate("/doctor/availability")} />
+          <StatCard icon="calendar_month" label="Total Appointments" value={totalSlots} color="text-sky-600 dark:text-sky-400 bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750" />
+          <StatCard icon="upcoming" label="Upcoming" value={booked} color="text-green-600 dark:text-green-400 bg-gradient-to-br from-green-100 to-green-200 dark:from-slate-800 dark:to-slate-750" onClick={() => navigate("/doctor/appointments")} />
+          <StatCard icon="check_circle" label="Completed" value={completed} color="text-cyan-600 dark:text-cyan-400 bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-slate-800 dark:to-slate-750" />
+          <StatCard icon="event_available" label="Available Slots" value={availableSlots} color="text-sky-600 dark:text-sky-400 bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750" onClick={() => navigate("/doctor/availability")} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-sky-500">today</span>
               Today's Schedule
             </h3>
             {todayAppts.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-slate-500">
+              <div className="flex flex-col items-center py-8 text-slate-500 dark:text-slate-500">
                 <span className="material-symbols-outlined text-3xl mb-2">event_busy</span>
-                <p className="font-body-md">No appointments today</p>
+                <p className="text-sm font-medium">No appointments today</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {todayAppts.map((apt) => (
-                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50">
-                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-sky-500 text-lg">person</span>
+                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50 dark:bg-slate-800/50">
+                    <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-slate-800 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-sky-500 dark:text-sky-400 text-lg">person</span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-label-md text-slate-900">{apt.patient_name || `Patient #${apt.id}`}</p>
-                      <p className="font-body-sm text-slate-500 text-[11px]">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{apt.patient_name || `Patient #${apt.id}`}</p>
+                      <p className="text-slate-500 dark:text-slate-500 text-[11px] font-medium">
                         {formatTime(apt.start_time)} - {formatTime(apt.end_time)}
                       </p>
                     </div>
-                    <span className="px-3 py-1 rounded-full bg-green-50 text-green-600 border border-green-200 text-[10px] font-bold uppercase tracking-wider">
+                    <span className="px-3 py-1 rounded-full bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/20 text-[10px] font-bold uppercase tracking-wider">
                       {apt.status}
                     </span>
                   </div>
@@ -173,26 +173,26 @@ export default function DoctorDashboard() {
             )}
           </div>
 
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-sky-500">upcoming</span>
               Upcoming Appointments
             </h3>
             {upcomingAppts.length === 0 ? (
-              <div className="flex flex-col items-center py-8 text-slate-500">
+              <div className="flex flex-col items-center py-8 text-slate-500 dark:text-slate-500">
                 <span className="material-symbols-outlined text-3xl mb-2">event_note</span>
-                <p className="font-body-md">No upcoming appointments</p>
+                <p className="text-sm font-medium">No upcoming appointments</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {upcomingAppts.map((apt) => (
-                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50">
-                    <div className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center">
-                      <span className="material-symbols-outlined text-sky-500 text-lg">person</span>
+                  <div key={apt.id} className="flex items-center gap-3 p-3 rounded-lg bg-sky-50 dark:bg-slate-800/50">
+                    <div className="w-10 h-10 rounded-full bg-sky-100 dark:bg-slate-800 flex items-center justify-center">
+                      <span className="material-symbols-outlined text-sky-500 dark:text-sky-400 text-lg">person</span>
                     </div>
                     <div className="flex-1">
-                      <p className="font-label-md text-slate-900">{apt.patient_name || `Appointment #${apt.id}`}</p>
-                      <p className="font-body-sm text-slate-500 text-[11px]">
+                      <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{apt.patient_name || `Appointment #${apt.id}`}</p>
+                      <p className="text-slate-500 dark:text-slate-500 text-[11px] font-medium">
                         {formatDate(apt.date)} &middot; {formatTime(apt.start_time)}
                       </p>
                     </div>
@@ -203,8 +203,8 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 p-6 mb-8">
-          <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 transition-all duration-300 p-6 mb-8">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-500">bolt</span>
             Quick Actions
           </h3>

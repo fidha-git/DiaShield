@@ -135,10 +135,10 @@ export default function DoctorProfile() {
               <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
               Doctor Portal
             </div>
-            <h1 className="text-3xl md:text-[42px] font-bold tracking-tight leading-tight">
+            <h1 className="hero-title text-[30px] md:text-[44px]">
               <span className="text-gradient">My Profile</span>
             </h1>
-            <p className="text-slate-400 mt-2 text-base">Manage your professional information.</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-2 text-base">Manage your professional information.</p>
           </div>
           {!editing && (
             <button onClick={() => setEditing(true)}
@@ -150,10 +150,10 @@ export default function DoctorProfile() {
         </header>
 
         {!editing ? (
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-            <div className="flex items-center gap-6 pb-6 border-b border-sky-100 mb-6">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+            <div className="flex items-center gap-6 pb-6 border-b border-slate-100 dark:border-slate-800/80 mb-6">
               <div className="relative group">
-                <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-gradient-to-br from-sky-400 to-sky-600 flex items-center justify-center ring-2 ring-sky-100">
+                <div className="w-[120px] h-[120px] rounded-full overflow-hidden bg-gradient-to-br from-sky-500 to-cyan-600 flex items-center justify-center ring-4 ring-sky-100 dark:ring-slate-700/50">
                   {profileImageUrl ? (
                     <img src={profileImageUrl} alt={profile.name} className="w-full h-full object-cover" />
                   ) : (
@@ -181,8 +181,8 @@ export default function DoctorProfile() {
                 />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-slate-900">{profile.name}</h3>
-                <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-600 text-xs font-semibold">{profile.specialization}</span>
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">{profile.name}</h3>
+                <span className="px-3 py-1 rounded-full bg-sky-100 dark:bg-sky-500/10 text-sky-600 dark:text-sky-400 text-xs font-semibold">{profile.specialization}</span>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-sm">
@@ -195,8 +195,8 @@ export default function DoctorProfile() {
             </div>
           </div>
         ) : (
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-6">Edit Profile</h3>
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6">Edit Profile</h3>
             <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Full Name" id="edit-name" name="name" required value={form.name} onChange={handleChange} />
               <Field label="Phone Number" id="edit-phone" name="phone" required value={form.phone} onChange={handleChange} />

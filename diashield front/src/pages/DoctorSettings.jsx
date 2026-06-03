@@ -31,47 +31,47 @@ export default function DoctorSettings() {
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
         <header className="mb-8">
-          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 border border-sky-200 text-sky-700 text-[10px] font-bold uppercase tracking-widest mb-4">
-            <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-[10px] font-bold uppercase tracking-widest mb-4 shadow-lg shadow-sky-500/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             Doctor Portal
           </div>
-          <h1 className="text-3xl md:text-[42px] font-bold tracking-tight leading-tight">
+          <h1 className="hero-title text-[30px] md:text-[44px]">
             <span className="text-gradient">Settings</span>
           </h1>
-          <p className="text-slate-400 mt-2 text-base">Manage your account preferences.</p>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-base">Manage your account preferences.</p>
         </header>
 
         <div className="space-y-6">
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-sky-500">lock</span>
               Security
             </h3>
             <form onSubmit={handleChangePassword} className="max-w-md space-y-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">Current Password</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Current Password</label>
                 <input type="password" required
-                  className="px-3 py-2 rounded-lg bg-white border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm" />
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm text-sm" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">New Password</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">New Password</label>
                 <input type="password" required
-                  className="px-3 py-2 rounded-lg bg-white border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm" />
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm text-sm" />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-xs font-semibold text-slate-500">Confirm New Password</label>
+                <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Confirm New Password</label>
                 <input type="password" required
-                  className="px-3 py-2 rounded-lg bg-white border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm" />
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm text-sm" />
               </div>
               <button type="submit"
-                className="px-5 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-sky-600 text-white font-label-md hover:from-sky-600 hover:to-sky-700 transition-all">
+                className="btn-primary text-xs">
                 Update Password
               </button>
             </form>
           </div>
 
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-sky-500">notifications</span>
               Notifications
             </h3>
@@ -84,26 +84,26 @@ export default function DoctorSettings() {
                 <label key={item.label} className="flex items-center gap-3 cursor-pointer">
                   <input type="checkbox" defaultChecked={item.default}
                     onChange={handleNotificationToggle}
-                    className="w-4 h-4 rounded bg-white border border-sky-100 accent-sky-500" />
-                  <span className="text-sm text-slate-900">{item.label}</span>
+                    className="w-4 h-4 rounded bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 accent-sky-500" />
+                  <span className="text-sm text-slate-900 dark:text-slate-100">{item.label}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6">
-            <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-sky-500">palette</span>
               Theme
             </h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               The DiaShield Doctor Portal uses your system's dark mode preference. Theme customization coming soon.
             </p>
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl border-2 border-sky-400 bg-gradient-to-br from-sky-100 to-cyan-100 flex items-center justify-center">
-                <span className="material-symbols-outlined text-sky-500 text-sm">light_mode</span>
+              <div className="w-10 h-10 rounded-xl border-2 border-sky-400 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-500/20 dark:to-cyan-500/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-sky-500 dark:text-sky-400 text-sm">light_mode</span>
               </div>
-              <span className="text-slate-900 font-semibold">Light Mode (Active)</span>
+              <span className="text-slate-900 dark:text-slate-100 font-semibold">Light Mode (Active)</span>
             </div>
           </div>
         </div>

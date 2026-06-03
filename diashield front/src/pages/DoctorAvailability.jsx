@@ -54,51 +54,51 @@ function SlotModal({ slot, onClose, onSave, onDelete }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-500">{isEdit ? "edit" : "add_circle"}</span>
             {isEdit ? "Edit Slot" : "Add New Slot"}
           </h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-900">
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-300">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-semibold text-slate-500">Date</label>
+            <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Date</label>
             <input
               type="date"
               name="date"
               required
               value={form.date}
               onChange={handleChange}
-              className="h-11 px-3 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm"
+              className="w-full h-11 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500">Start Time</label>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">Start Time</label>
               <input
                 type="time"
                 name="start_time"
                 required
                 value={form.start_time}
                 onChange={handleChange}
-                className="h-11 px-3 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm"
+                className="w-full h-11 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-slate-500">End Time</label>
+              <label className="text-xs font-semibold text-slate-500 dark:text-slate-400">End Time</label>
               <input
                 type="time"
                 name="end_time"
                 required
                 value={form.end_time}
                 onChange={handleChange}
-                className="h-11 px-3 rounded-lg bg-sky-50 border border-sky-100 text-slate-900 focus:outline-none focus:border-sky-400/50 text-sm"
+                className="w-full h-11 px-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
               />
             </div>
           </div>
@@ -109,7 +109,7 @@ function SlotModal({ slot, onClose, onSave, onDelete }) {
                 <button
                   type="button"
                   onClick={() => onDelete(slot.id)}
-                  className="px-4 py-2 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors"
                 >
                   Delete Slot
                 </button>
@@ -120,14 +120,14 @@ function SlotModal({ slot, onClose, onSave, onDelete }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-sky-100 text-slate-500 text-xs font-semibold hover:bg-sky-50"
+                className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2 rounded-lg bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-xs font-semibold hover:from-sky-600 hover:to-cyan-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="btn-primary disabled:opacity-50 text-xs"
               >
                 {saving && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
                 {saving ? "Saving..." : isEdit ? "Update Slot" : "Add Slot"}
@@ -143,18 +143,18 @@ function SlotModal({ slot, onClose, onSave, onDelete }) {
 function ConfirmDeleteModal({ slot, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30 p-6 w-full max-w-sm animate-scale-in text-center" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-sm animate-scale-in text-center" onClick={(e) => e.stopPropagation()}>
         <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
           <span className="material-symbols-outlined text-3xl text-red-500">delete_forever</span>
         </div>
-        <h3 className="text-base font-bold text-slate-900 mb-2">Delete Slot</h3>
-        <p className="text-sm text-slate-500 mb-6">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">Delete Slot</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
           Delete slot on {new Date(slot.date).toLocaleDateString()} at {slot.start_time?.slice(0, 5)}?
         </p>
         <div className="flex justify-center gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-sky-100 text-slate-500 text-xs font-semibold hover:bg-sky-50"
+            className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
           >
             Cancel
           </button>
@@ -298,55 +298,42 @@ export default function DoctorAvailability() {
       <div className="max-w-[1400px] mx-auto">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-        <section className="relative overflow-hidden rounded-[24px] border border-cyan-200/35 bg-gradient-to-br from-[#021B3A] via-[#053B70] to-[#0C7CB8] shadow-[0_24px_70px_rgba(2,23,55,0.42)] p-8 md:p-10">
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(125,211,252,0.28) 1px, transparent 1px), linear-gradient(90deg, rgba(125,211,252,0.28) 1px, transparent 1px)",
-              backgroundSize: "28px 28px",
-            }}
-          />
-          <div className="absolute -top-20 -left-16 w-64 h-64 rounded-full bg-cyan-300/20 blur-3xl" />
-          <div className="absolute -bottom-16 -right-10 w-72 h-72 rounded-full bg-sky-300/15 blur-3xl" />
-
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/25 bg-white/10 backdrop-blur-xl text-white/90 text-[11px] font-bold uppercase tracking-widest mb-5">
-                <span className="material-symbols-outlined text-[16px]">schedule</span>
-                Schedule Management
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 p-[2px] shadow-2xl shadow-sky-500/20 dark:shadow-sky-500/10">
+          <div className="relative overflow-hidden rounded-[calc(1.5rem-2px)] bg-white dark:bg-[#0F172A]">
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-sky-400/20 dark:bg-sky-500/5 rounded-full blur-3xl animate-blob1 pointer-events-none" />
+            <div className="absolute -bottom-32 -left-20 w-80 h-80 bg-cyan-300/20 dark:bg-cyan-500/5 rounded-full blur-3xl animate-blob2 pointer-events-none" />
+            <div className="relative z-10 p-8 md:p-10 grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-8 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-[10px] font-bold uppercase tracking-widest mb-4 shadow-lg shadow-sky-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  Schedule Management
+                </div>
+                <h1 className="hero-title text-[30px] md:text-[44px]">Availability Slots</h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-base max-w-3xl">
+                  Manage your consultation schedule and available appointment slots.
+                </p>
               </div>
-              <h1 className="text-4xl md:text-[52px] leading-[1.05] font-extrabold text-white tracking-tight">Availability Slots</h1>
-              <p className="mt-6 text-[17px] md:text-[20px] leading-relaxed text-sky-50/90 max-w-3xl">
-                Manage your consultation schedule and available appointment slots.
-              </p>
-            </div>
 
-            <div className="hidden lg:flex justify-center">
-              <div className="relative w-[240px] h-[240px] rounded-[24px] border border-white/25 bg-white/10 backdrop-blur-xl shadow-2xl flex items-center justify-center">
-                <div className="absolute top-4 right-4 w-9 h-9 rounded-xl bg-white/20 border border-white/25 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-white text-[20px]">event</span>
+              <div className="hidden lg:flex justify-center">
+                <div className="relative w-[200px] h-[200px] rounded-[24px] border border-sky-100 dark:border-slate-800 bg-white dark:bg-[#0F172A]/90 shadow-lg shadow-slate-100/50 dark:shadow-none flex items-center justify-center">
+                  <span className="material-symbols-outlined text-sky-400 dark:text-sky-500 text-[80px]">calendar_clock</span>
                 </div>
-                <div className="absolute bottom-4 left-4 w-9 h-9 rounded-xl bg-cyan-200/20 border border-cyan-100/30 flex items-center justify-center">
-                  <span className="material-symbols-outlined text-cyan-50 text-[20px]">schedule</span>
-                </div>
-                <span className="material-symbols-outlined text-white/95 text-[96px]">calendar_clock</span>
               </div>
             </div>
           </div>
         </section>
 
         <section className="mt-8 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-          <StatCard label="Total Slots" value={totalSlots} valueClass="text-slate-900" border="border-sky-200/70" />
-          <StatCard label="Available Slots" value={availableSlots} valueClass="text-green-600" border="border-green-200/70" />
-          <StatCard label="Booked Slots" value={bookedSlots} valueClass="text-sky-600" border="border-sky-200/70" />
-          <StatCard label="Today's Slots" value={todaysSlots} valueClass="text-cyan-600" border="border-cyan-200/70" />
+          <StatCard label="Total Slots" value={totalSlots} valueClass="" />
+          <StatCard label="Available Slots" value={availableSlots} valueClass="text-green-600 dark:text-green-400" />
+          <StatCard label="Booked Slots" value={bookedSlots} valueClass="text-sky-600 dark:text-sky-400" />
+          <StatCard label="Today's Slots" value={todaysSlots} valueClass="text-cyan-600 dark:text-cyan-400" />
         </section>
 
-        <section className="mt-8 rounded-[20px] border border-sky-200/70 bg-white/80 backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] p-6">
+        <section className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
           <div className="mb-6">
-            <h2 className="text-2xl md:text-[30px] font-bold text-slate-900 tracking-tight">Create New Slot</h2>
-            <p className="text-slate-500 mt-2 text-[15px]">Add consultation windows for patient bookings.</p>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Create New Slot</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Add consultation windows for patient bookings.</p>
           </div>
 
           <form onSubmit={handleCreateSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -357,7 +344,7 @@ export default function DoctorAvailability() {
                 required
                 value={createForm.date}
                 onChange={handleCreateChange}
-                className="h-12 px-4 rounded-xl border border-sky-200 bg-sky-50/80 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-300/50 focus:border-sky-400"
+                className="w-full h-12 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
               />
             </FormField>
 
@@ -368,7 +355,7 @@ export default function DoctorAvailability() {
                 required
                 value={createForm.start_time}
                 onChange={handleCreateChange}
-                className="h-12 px-4 rounded-xl border border-sky-200 bg-sky-50/80 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-300/50 focus:border-sky-400"
+                className="w-full h-12 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
               />
             </FormField>
 
@@ -379,7 +366,7 @@ export default function DoctorAvailability() {
                 required
                 value={createForm.end_time}
                 onChange={handleCreateChange}
-                className="h-12 px-4 rounded-xl border border-sky-200 bg-sky-50/80 text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-300/50 focus:border-sky-400"
+                className="w-full h-12 px-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/10 transition-all shadow-sm"
               />
             </FormField>
 
@@ -387,7 +374,7 @@ export default function DoctorAvailability() {
               <button
                 type="submit"
                 disabled={creating}
-                className="w-full h-12 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold text-sm hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg shadow-sky-200/60 disabled:opacity-60"
+                className="btn-primary w-full h-12 disabled:opacity-60"
               >
                 {creating && <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />}
                 {creating ? "Creating..." : "Add Availability Slot"}
@@ -398,37 +385,36 @@ export default function DoctorAvailability() {
 
         {loading ? (
           <div className="mt-10 space-y-6">
-            <div className="shimmer h-32 rounded-[20px]" />
+            <div className="shimmer h-32 rounded-2xl" />
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="shimmer h-48 rounded-[20px]" />
+                <div key={i} className="shimmer h-48 rounded-2xl" />
               ))}
             </div>
           </div>
         ) : slots.length === 0 ? (
-          <div className="mt-10 relative rounded-[20px] border border-sky-200 bg-white/80 backdrop-blur-xl shadow-[0_12px_36px_rgba(15,23,42,0.08)] flex flex-col items-center py-20 gap-4 overflow-hidden">
-            <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gradient-to-br from-sky-500/5 to-cyan-500/5 blur-2xl" />
-            <span className="material-symbols-outlined text-6xl text-sky-300">schedule</span>
-            <span className="text-xl font-bold text-slate-700">No slots created yet</span>
-            <p className="text-base text-slate-500">Use the form above to create your first availability slot.</p>
+          <div className="mt-10 bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none flex flex-col items-center py-20 gap-4 overflow-hidden">
+            <span className="material-symbols-outlined text-6xl text-sky-300 dark:text-sky-500">schedule</span>
+            <span className="text-xl font-bold text-slate-700 dark:text-slate-300">No slots created yet</span>
+            <p className="text-base text-slate-500 dark:text-slate-400">Use the form above to create your first availability slot.</p>
           </div>
         ) : (
           <section className="mt-10">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl md:text-[30px] font-bold text-slate-900 tracking-tight">Available Slots</h2>
-              <p className="text-sm text-slate-500 font-medium">{totalSlots} total slots</p>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Available Slots</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">{totalSlots} total slots</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {sortedSlots.map((slot) => (
                 <div
                   key={slot.id}
-                  className="group rounded-[20px] border border-sky-200/70 bg-white/80 backdrop-blur-xl p-6 shadow-[0_10px_28px_rgba(15,23,42,0.08)] hover:shadow-[0_16px_38px_rgba(14,116,144,0.18)] hover:-translate-y-0.5 transition-all duration-300"
+                  className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5 hover:-translate-y-0.5 transition-all duration-300 p-6"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-[13px] uppercase tracking-wider font-semibold text-slate-500">Date</p>
-                      <p className="mt-1 text-lg font-bold text-slate-900">
+                      <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-500 dark:text-slate-500">Date</p>
+                      <p className="mt-1 text-lg font-bold text-slate-900 dark:text-slate-100">
                         {new Date(slot.date).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -439,8 +425,8 @@ export default function DoctorAvailability() {
                     <span
                       className={`text-xs font-bold px-3 py-1 rounded-full ${
                         slot.is_booked
-                          ? "bg-red-50 text-red-600 border border-red-200"
-                          : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          ? "bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20"
+                          : "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
                       }`}
                     >
                       {slot.is_booked ? "Booked" : "Available"}
@@ -449,33 +435,33 @@ export default function DoctorAvailability() {
 
                   <div className="mt-6 grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[12px] font-semibold text-slate-500">Start Time</p>
-                      <p className="mt-1 text-base font-bold text-slate-800">{slot.start_time?.slice(0, 5)}</p>
+                      <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-500">Start Time</p>
+                      <p className="mt-1 text-base font-bold text-slate-800 dark:text-slate-200">{slot.start_time?.slice(0, 5)}</p>
                     </div>
                     <div>
-                      <p className="text-[12px] font-semibold text-slate-500">End Time</p>
-                      <p className="mt-1 text-base font-bold text-slate-800">{slot.end_time?.slice(0, 5)}</p>
+                      <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-500">End Time</p>
+                      <p className="mt-1 text-base font-bold text-slate-800 dark:text-slate-200">{slot.end_time?.slice(0, 5)}</p>
                     </div>
                   </div>
 
-                  <div className="mt-5 pt-4 border-t border-sky-100 flex items-center justify-between">
+                  <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                     <div>
-                      <p className="text-[12px] font-semibold text-slate-500">Number of Bookings</p>
-                      <p className="mt-1 text-base font-bold text-slate-900">{slot.is_booked ? 1 : 0}</p>
+                      <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-500">Number of Bookings</p>
+                      <p className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{slot.is_booked ? 1 : 0}</p>
                     </div>
 
                     {!slot.is_booked && (
                       <div className="flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => setModalSlot(slot)}
-                          className="h-10 w-10 rounded-xl border border-sky-200 text-sky-600 hover:bg-sky-50 transition-colors flex items-center justify-center"
+                          className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
                           title="Edit"
                         >
                           <span className="material-symbols-outlined text-[20px]">edit</span>
                         </button>
                         <button
                           onClick={() => setDeleteTarget(slot)}
-                          className="h-10 w-10 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors flex items-center justify-center"
+                          className="h-10 w-10 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center"
                           title="Delete"
                         >
                           <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -510,11 +496,11 @@ export default function DoctorAvailability() {
   );
 }
 
-function StatCard({ label, value, valueClass, border }) {
+function StatCard({ label, value, valueClass }) {
   return (
-    <div className={`rounded-[20px] border ${border} bg-white/85 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.08)] p-6`}>
-      <p className="text-sm font-semibold tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-3 text-[38px] leading-none font-extrabold ${valueClass}`}>{value}</p>
+    <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 relative overflow-hidden">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-500">{label}</p>
+      <p className={`mt-1 text-[34px] leading-none font-extrabold text-slate-900 dark:text-slate-100 ${valueClass || ""}`}>{value}</p>
     </div>
   );
 }
@@ -522,7 +508,7 @@ function StatCard({ label, value, valueClass, border }) {
 function FormField({ label, children }) {
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-semibold text-slate-600">{label}</label>
+      <label className="text-sm font-semibold text-slate-600 dark:text-slate-400">{label}</label>
       {children}
     </div>
   );

@@ -68,6 +68,43 @@ def get_doctor_prescriptions(db: Session, user_id: int):
     print(f"[PRESCRIPTION_SERVICE] Found {len(prescriptions)} prescriptions")
     return prescriptions
 
+def get_patient_prescriptions(db: Session, user_id: int):
+    """
+    Get all prescriptions for a patient by querying appointments.
+    Returns only prescriptions for completed appointments.
+    """
+    try:
+        print(f"[PRESCRIPTION_SERVICE] get_patient_prescriptions called with user_id={user_id}")
+        
+        # Get appointments for this user (user_id directly, not patient_id)
+        appointments = db.query(Appointment).filter(
+            Appointment.user_id == user_id
+        ).all()
+        
+        print(f"[PRESCRIPTION_SERVICE] Found {len(appointments)} appointments for user_id={user_id}")
+        
+        # Get prescriptions for these appointments
+        prescriptions = []
+        for appointment in appointments:
+            print(f"[PRESCRIPTION_SERVICE] Checking appointment {appointment.id} for prescription")
+            prescription = db.query(Prescription).filter(
+                Prescription.appointment_id == appointment.id
+            ).first()
+            if prescription:
+                print(f"[PRESCRIPTION_SERVICE] Found prescription {prescription.id} for appointment {appointment.id}")
+                prescriptions.append(prescription)
+        
+        print(f"[PRESCRIPTION_SERVICE] Total prescriptions found: {len(prescriptions)}")
+        
+        # Sort by created_at (newest first)
+        prescriptions.sort(key=lambda p: p.created_at, reverse=True)
+        return prescriptions
+    except Exception as e:
+        print(f"[PRESCRIPTION_SERVICE] Error in get_patient_prescriptions: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return []
+
 def delete_prescription(db: Session, appointment_id: int, user_id: int):
     prescription = db.query(Prescription).filter(Prescription.appointment_id == appointment_id).first()
     if not prescription:

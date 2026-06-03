@@ -11,19 +11,19 @@ const TYPE_ICONS = {
 };
 
 const TYPE_COLORS = {
-  appointment: "border-l-cyan-500 bg-[#F0F9FF]",
-  condition: "border-l-amber-500 bg-amber-50",
-  surgery: "border-l-red-500 bg-red-50",
-  vitals: "border-l-emerald-500 bg-emerald-50",
-  prediction: "border-l-sky-500 bg-[#F0F9FF]",
+  appointment: "border-l-cyan-500 bg-[#F0F9FF] dark:bg-cyan-900/20",
+  condition: "border-l-amber-500 bg-amber-50 dark:bg-amber-900/20",
+  surgery: "border-l-red-500 bg-red-50 dark:bg-red-900/20",
+  vitals: "border-l-emerald-500 bg-emerald-50 dark:bg-emerald-900/20",
+  prediction: "border-l-sky-500 bg-[#F0F9FF] dark:bg-sky-900/20",
 };
 
 const TYPE_BADGES = {
-  appointment: "bg-[#F0F9FF] text-cyan-600",
-  condition: "bg-amber-50 text-amber-600",
-  surgery: "bg-red-50 text-red-600",
-  vitals: "bg-emerald-50 text-emerald-600",
-  prediction: "bg-[#F0F9FF] text-sky-600",
+  appointment: "bg-[#F0F9FF] dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400",
+  condition: "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400",
+  surgery: "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400",
+  vitals: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400",
+  prediction: "bg-[#F0F9FF] dark:bg-sky-900/20 text-sky-600 dark:text-sky-400",
 };
 
 export default function HealthTimeline() {
@@ -72,7 +72,7 @@ export default function HealthTimeline() {
       <div className="space-y-6">
         <div className="max-w-5xl mx-auto text-center py-16">
           <p className="text-red-600 text-lg">{error}</p>
-          <button onClick={loadData} className="mt-4 px-5 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 font-semibold text-sm hover:bg-sky-50 transition-all">Retry</button>
+          <button onClick={loadData} className="mt-4 px-5 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 font-semibold text-sm hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all">Retry</button>
         </div>
       </div>
     );
@@ -146,7 +146,7 @@ export default function HealthTimeline() {
             </div>
 
             {timeline.length === 0 ? (
-              <div className="text-center py-16 bg-white border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30">
+              <div className="text-center py-16 bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-2xl shadow-lg shadow-blue-200/30">
                 <EmptyHealthRecords className="w-36 h-28 mx-auto mb-4 opacity-60" />
                 <p className="text-muted text-base font-medium">No timeline events yet</p>
                 <p className="card-description text-sm mt-1">Events will appear here as you interact with healthcare services.</p>
@@ -172,7 +172,7 @@ export default function HealthTimeline() {
               {latestHistory?.chronic_diseases ? (
                 <div className="flex flex-wrap gap-2">
                   {latestHistory.chronic_diseases.split(",").map((d, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold border border-amber-200">
+                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-xs font-semibold border border-amber-200">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
                       {d.trim()}
                     </span>
@@ -193,7 +193,7 @@ export default function HealthTimeline() {
               {latestHistory?.past_illnesses ? (
                 <div className="flex flex-wrap gap-2">
                   {latestHistory.past_illnesses.split(",").map((d, i) => (
-                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F9FF] text-cyan-600 text-xs font-semibold border border-cyan-200">
+                    <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#F0F9FF] dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400 text-xs font-semibold border border-cyan-200">
                       {d.trim()}
                     </span>
                   ))}
@@ -228,7 +228,7 @@ export default function HealthTimeline() {
             </SectionCard>
 
             {/* Lifestyle + Edit Button */}
-            <div className="bg-white border border-sky-100 rounded-2xl p-5 shadow-lg shadow-blue-200/30">
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-2xl p-5 shadow-lg shadow-blue-200/30">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="card-title text-sm flex items-center gap-2">
                   <span className="material-symbols-outlined text-green-600 text-lg">favorite</span>
@@ -247,9 +247,9 @@ export default function HealthTimeline() {
                   <span className="text-muted text-xs font-medium uppercase tracking-wider">Smoking</span>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                     latestHistory?.smoking_status === "non-smoker" || !latestHistory?.smoking_status
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-amber-50 text-amber-600"
-                  }`}>
+                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+                    : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                }`}>
                     {latestHistory?.smoking_status || "Not set"}
                   </span>
                 </div>
@@ -257,9 +257,9 @@ export default function HealthTimeline() {
                   <span className="text-muted text-xs font-medium uppercase tracking-wider">Alcohol</span>
                   <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                     latestHistory?.alcohol_status === "non-drinker" || !latestHistory?.alcohol_status
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-amber-50 text-amber-600"
-                  }`}>
+                    ? "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+                    : "bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400"
+                }`}>
                     {latestHistory?.alcohol_status || "Not set"}
                   </span>
                 </div>
@@ -314,7 +314,7 @@ function SummaryCard({ icon, label, value, sub, color, iconColor }) {
 
 function SectionCard({ title, icon, iconColor, children, empty }) {
   return (
-    <div className="bg-white border border-sky-100 rounded-2xl p-5 shadow-lg shadow-blue-200/30">
+    <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-2xl p-5 shadow-lg shadow-blue-200/30">
       <h3 className="card-title text-sm flex items-center gap-2 mb-4">
         <span className={`material-symbols-outlined text-lg ${iconColor}`}>{icon}</span>
         {title}
@@ -359,17 +359,17 @@ function TimelineCard({ event }) {
           )}
         </div>
         {event.status === "completed" && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full shrink-0 self-start">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2.5 py-1 rounded-full shrink-0 self-start">
             Completed
           </span>
         )}
         {event.status === "booked" && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 bg-[#F0F9FF] px-2.5 py-1 rounded-full shrink-0 self-start">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-600 dark:text-cyan-400 bg-[#F0F9FF] dark:bg-cyan-900/20 px-2.5 py-1 rounded-full shrink-0 self-start">
             Upcoming
           </span>
         )}
         {event.status === "cancelled" && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded-full shrink-0 self-start">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2.5 py-1 rounded-full shrink-0 self-start">
             Cancelled
           </span>
         )}
@@ -412,13 +412,13 @@ function LifestyleModal({ history, onClose, onSaved }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="bg-white border border-sky-100 rounded-3xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-3xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
           <h3 className="card-title text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-green-600">favorite</span>
             Lifestyle & Family History
           </h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 transition-colors">
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -426,7 +426,7 @@ function LifestyleModal({ history, onClose, onSaved }) {
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5 block">Smoking Status</label>
             <select name="smoking_status" value={form.smoking_status} onChange={handleChange}
-              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors">
+              className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors">
               <option value="">Not set</option>
               <option value="non-smoker">Non-smoker</option>
               <option value="former smoker">Former smoker</option>
@@ -436,7 +436,7 @@ function LifestyleModal({ history, onClose, onSaved }) {
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5 block">Alcohol Consumption</label>
             <select name="alcohol_status" value={form.alcohol_status} onChange={handleChange}
-              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors">
+              className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors">
               <option value="">Not set</option>
               <option value="non-drinker">Non-drinker</option>
               <option value="occasional">Occasional</option>
@@ -447,19 +447,19 @@ function LifestyleModal({ history, onClose, onSaved }) {
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5 block">Family History</label>
             <input name="family_history" value={form.family_history} onChange={handleChange}
               placeholder="e.g. Diabetes, Hypertension (parent, sibling)"
-              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400" />
+              className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400" />
           </div>
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1.5 block">Allergies / Notes</label>
             <textarea name="notes" value={form.notes} onChange={handleChange}
               placeholder="e.g. Allergic to penicillin, sulfa drugs"
               rows={2}
-              className="w-full px-3 py-2.5 rounded-xl bg-white border border-sky-100 text-slate-900 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400 resize-none" />
+              className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 text-slate-900 dark:text-slate-100 text-sm outline-none focus:border-sky-500 transition-colors placeholder:text-slate-400 resize-none" />
           </div>
           {error && <p className="text-red-600 text-sm">{error}</p>}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-sky-100 text-slate-500 font-semibold text-sm bg-white hover:bg-sky-50 transition-all">
+              className="flex-1 px-4 py-2.5 rounded-xl border border-sky-100 text-slate-500 dark:text-slate-400 font-semibold text-sm bg-white dark:bg-[#0F172A]/90 hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-all">
               Cancel
             </button>
             <button type="submit" disabled={saving}

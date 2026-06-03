@@ -101,21 +101,17 @@ function Toast({ message, type, onClose }) {
   );
 }
 
-function StatsCard({ icon, label, value, gradient, pulse = false }) {
+function StatsCard({ icon, label, value, color, pulse = false }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-white/70 p-5 text-slate-900 shadow-lg shadow-sky-100/60 ${gradient}`}>
-      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-white/40 blur-2xl" />
-      <div className="relative z-10 flex items-center justify-between">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-slate-600 font-semibold">
-            {label}
-          </p>
-          <p className={`mt-1 text-[30px] leading-none font-extrabold ${pulse ? "animate-pulse" : ""}`}>
-            {value}
-          </p>
+    <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 shadow-lg shadow-slate-100/50 dark:shadow-none p-6">
+      <div className="absolute -top-6 -right-6 w-16 h-16 bg-sky-50 dark:bg-sky-500/5 rounded-full blur-2xl" />
+      <div className="relative z-10 flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color || "bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750 text-sky-600 dark:text-sky-400"}`}>
+          <span className="material-symbols-outlined text-xl">{icon}</span>
         </div>
-        <div className="h-12 w-12 rounded-xl bg-white/80 border border-white/80 flex items-center justify-center shadow-sm">
-          <span className="material-symbols-outlined text-sky-700">{icon}</span>
+        <div>
+          <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-wider">{label}</p>
+          <p className={`text-[28px] font-bold text-slate-900 dark:text-slate-100 leading-none mt-1 ${pulse ? "animate-pulse" : ""}`}>{value}</p>
         </div>
       </div>
     </div>
@@ -126,7 +122,7 @@ function SkeletonCards() {
   return (
     <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
       {Array.from({ length: 6 }).map((_, idx) => (
-        <div key={idx} className="rounded-2xl border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/40">
+        <div key={idx} className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-lg shadow-slate-100/50 dark:shadow-none">
           <div className="flex items-start justify-between gap-4 animate-pulse">
             <div className="flex gap-3 items-center">
               <div className="h-12 w-12 rounded-2xl bg-sky-100" />
@@ -184,17 +180,17 @@ function AppointmentCard({
   const riskLevel = getRiskLevel(apt);
 
   return (
-    <article className="group rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-200/60">
+    <article className="group bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-lg shadow-slate-100/50 dark:shadow-none transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-sky-500/5 dark:hover:shadow-sky-500/5">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white font-bold text-sm flex items-center justify-center shadow-lg shadow-sky-500/30">
             {getPatientInitial(patientName, apt.id)}
           </div>
           <div className="min-w-0">
-            <h3 className="text-[18px] leading-tight font-bold text-slate-900 truncate">
+            <h3 className="text-[18px] leading-tight font-bold text-slate-900 dark:text-slate-100 truncate">
               {patientName}
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 dark:text-slate-500">
               {age ? `${age} yrs` : "Age N/A"} - {gender || "Gender N/A"}
             </p>
           </div>
@@ -280,9 +276,9 @@ function AppointmentCard({
       </div>
 
       {hasPrescription && prescription?.medicines && (
-        <div className="mt-4 rounded-xl border border-sky-100 bg-gradient-to-r from-sky-50 to-cyan-50 px-3 py-2.5">
-          <p className="text-[11px] uppercase tracking-[0.12em] font-semibold text-sky-700">Active Prescription</p>
-          <p className="text-sm font-semibold text-slate-800 mt-0.5">{prescription.medicines}</p>
+        <div className="mt-4 rounded-xl border border-sky-100 dark:border-sky-500/20 bg-gradient-to-r from-sky-50 to-cyan-50 dark:from-sky-500/10 dark:to-cyan-500/10 px-3 py-2.5">
+          <p className="text-[11px] uppercase tracking-[0.12em] font-semibold text-sky-700 dark:text-sky-400">Active Prescription</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 mt-0.5">{prescription.medicines}</p>
         </div>
       )}
     </article>
@@ -303,12 +299,12 @@ function IconAction({ icon, title, onClick, className }) {
 
 function InfoPill({ icon, label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50 p-3">
+      <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-500">
         <span className="material-symbols-outlined text-[15px]">{icon}</span>
         {label}
       </div>
-      <p className="mt-1 text-sm font-semibold text-slate-800 truncate">{value || "-"}</p>
+      <p className="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{value || "-"}</p>
     </div>
   );
 }
@@ -498,60 +494,55 @@ export default function DoctorAppointments() {
       <div className="max-w-7xl mx-auto">
         {toast && <Toast message={toast.message} type={toast.type} onClose={closeToast} />}
 
-        <section className="relative overflow-hidden rounded-[28px] border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-cyan-50 shadow-xl shadow-sky-100/70 px-6 py-7 md:px-9 md:py-9 mb-7">
-          <div className="absolute -top-16 -right-16 h-52 w-52 rounded-full bg-sky-200/35 blur-3xl" />
-          <div className="absolute -bottom-20 -left-8 h-52 w-52 rounded-full bg-cyan-200/35 blur-3xl" />
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 p-[2px] shadow-2xl shadow-sky-500/20 dark:shadow-sky-500/10 mb-7">
+          <div className="relative overflow-hidden rounded-[calc(1.5rem-2px)] bg-white dark:bg-[#0F172A]">
+            <div className="absolute -top-20 -right-20 w-96 h-96 bg-sky-400/20 dark:bg-sky-500/5 rounded-full blur-3xl animate-blob1 pointer-events-none" />
+            <div className="absolute -bottom-32 -left-20 w-80 h-80 bg-cyan-300/20 dark:bg-cyan-500/5 rounded-full blur-3xl animate-blob2 pointer-events-none" />
+            <div className="relative z-10 px-6 py-7 md:px-9 md:py-9 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-[10px] font-bold uppercase tracking-widest mb-4 shadow-lg shadow-sky-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  Doctor Workflow
+                </div>
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
-            <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-sky-200 text-sky-700 text-[11px] font-bold uppercase tracking-[0.14em] mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
-                Doctor Workflow
+                <h1 className="hero-title text-[30px] md:text-[44px]">
+                  My Appointments
+                </h1>
+                <p className="text-slate-500 dark:text-slate-400 mt-2 text-base max-w-2xl">
+                  Run your clinic day with clarity. Review upcoming visits, complete consults, capture clinical notes, and manage prescriptions from one premium workspace.
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-2.5">
+                  <button className="btn-primary" onClick={() => navigate("/doctor/availability")}>
+                    <span className="material-symbols-outlined text-base">add</span>
+                    Add Slot
+                  </button>
+                  <button className="btn-outline" onClick={() => navigate("/doctor/notes")}>
+                    <span className="material-symbols-outlined text-base">description</span>
+                    Clinical Notes
+                  </button>
+                  <button className="btn-outline" onClick={() => navigate("/doctor/prescriptions")}>
+                    <span className="material-symbols-outlined text-base">medication</span>
+                    Prescriptions
+                  </button>
+                </div>
               </div>
 
-              <h1 className="text-[32px] md:text-[44px] font-extrabold tracking-tight leading-tight text-slate-900">
-                My Appointments
-              </h1>
-              <p className="mt-2 text-[15px] text-slate-500 max-w-2xl">
-                Run your clinic day with clarity. Review upcoming visits, complete consults, capture clinical notes, and manage prescriptions from one premium workspace.
-              </p>
-
-              <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 max-w-xl">
-                <SummaryChip label="Today" value={metrics.today} />
-                <SummaryChip label="Upcoming" value={metrics.upcoming} />
-                <SummaryChip label="Completed" value={metrics.completed} />
+              <div className="hidden lg:block w-[280px]">
+                <HealthcareHero className="w-full h-auto" />
               </div>
-
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                <button className="btn-primary" onClick={() => navigate("/doctor/availability")}>
-                  <span className="material-symbols-outlined text-[18px]">add</span>
-                  Add Slot
-                </button>
-                <button className="btn-outline" onClick={() => navigate("/doctor/notes")}>
-                  <span className="material-symbols-outlined text-[18px]">description</span>
-                  Clinical Notes
-                </button>
-                <button className="btn-outline" onClick={() => navigate("/doctor/prescriptions")}>
-                  <span className="material-symbols-outlined text-[18px]">medication</span>
-                  Prescriptions
-                </button>
-              </div>
-            </div>
-
-            <div className="hidden lg:block w-[280px]">
-              <HealthcareHero className="w-full h-auto" />
             </div>
           </div>
         </section>
 
         <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-7">
-          <StatsCard icon="calendar_month" label="Today's Appointments" value={metrics.today} gradient="bg-gradient-to-br from-sky-100 via-sky-50 to-white" pulse />
-          <StatsCard icon="schedule" label="Upcoming" value={metrics.upcoming} gradient="bg-gradient-to-br from-cyan-100 via-cyan-50 to-white" />
-          <StatsCard icon="check_circle" label="Completed" value={metrics.completed} gradient="bg-gradient-to-br from-emerald-100 via-emerald-50 to-white" />
-          <StatsCard icon="event_busy" label="Cancelled" value={metrics.cancelled} gradient="bg-gradient-to-br from-rose-100 via-rose-50 to-white" />
+          <StatsCard icon="calendar_month" label="Today's Appointments" value={metrics.today} color="text-sky-600 dark:text-sky-400 bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750" pulse />
+          <StatsCard icon="schedule" label="Upcoming" value={metrics.upcoming} color="text-cyan-600 dark:text-cyan-400 bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-slate-800 dark:to-slate-750" />
+          <StatsCard icon="check_circle" label="Completed" value={metrics.completed} color="text-emerald-600 dark:text-emerald-400 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-slate-800 dark:to-slate-750" />
+          <StatsCard icon="event_busy" label="Cancelled" value={metrics.cancelled} color="text-rose-600 dark:text-rose-400 bg-gradient-to-br from-rose-100 to-rose-200 dark:from-slate-800 dark:to-slate-750" />
         </section>
 
-        <section className="rounded-2xl border border-sky-100 bg-white p-4 md:p-5 shadow-md shadow-sky-100/50 mb-7">
+        <section className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-4 md:p-5 mb-7">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
             <FilterControl label="Search Patient">
               <input
@@ -612,7 +603,7 @@ export default function DoctorAppointments() {
           {loading ? (
             <SkeletonCards />
           ) : filteredAppointments.length === 0 ? (
-            <div className="rounded-[24px] border border-sky-100 bg-white py-16 px-6 text-center shadow-lg shadow-sky-100/40">
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none py-16 px-6 text-center">
               <EmptyAppointments className="w-40 h-32 mx-auto opacity-70" />
               <h3 className="mt-4 text-[22px] font-bold text-slate-900">No appointments matched your filters</h3>
               <p className="mt-2 text-slate-500 max-w-xl mx-auto">
@@ -652,7 +643,7 @@ export default function DoctorAppointments() {
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-between rounded-2xl border border-sky-100 bg-white px-4 py-3 shadow-sm">
+                <div className="mt-6 flex items-center justify-between bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none px-4 py-3">
                   <span className="text-sm text-slate-500 font-medium">
                     Page {page} of {totalPages}
                   </span>
@@ -737,11 +728,11 @@ function AppointmentDetailsModal({ appointment, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
       <div
-        className="w-full max-w-lg rounded-2xl border border-sky-100 bg-white p-6 shadow-2xl animate-scale-in"
+        className="w-full max-w-lg rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-600">patient_list</span>
             Patient Overview
           </h3>
@@ -750,7 +741,7 @@ function AppointmentDetailsModal({ appointment, onClose }) {
           </button>
         </div>
 
-        <div className="flex items-center gap-4 pb-4 border-b border-sky-100">
+        <div className="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
           <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white font-bold flex items-center justify-center shadow-lg shadow-sky-500/30">
             {getPatientInitial(appointment.patient_name, appointment.id)}
           </div>
@@ -784,9 +775,9 @@ function AppointmentDetailsModal({ appointment, onClose }) {
 
 function DetailItem({ label, value }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 mb-1">{label}</p>
-      <p className="text-sm font-semibold text-slate-800 break-words">{value || "-"}</p>
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/50 px-3 py-2.5">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500 dark:text-slate-500 mb-1">{label}</p>
+      <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 break-words">{value || "-"}</p>
     </div>
   );
 }
@@ -804,9 +795,9 @@ function QuickNoteModal({ appointment, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl border border-sky-100 bg-white p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-lg rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-600">description</span>
             Add Clinical Note
           </h3>
@@ -815,7 +806,7 @@ function QuickNoteModal({ appointment, onClose, onSave }) {
           </button>
         </div>
 
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
           Appointment #{appointment.id} - {formatDate(appointment.date)}
         </p>
 
@@ -879,9 +870,9 @@ function QuickCreatePrescriptionModal({ appointment, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-xl rounded-2xl border border-sky-100 bg-white p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-xl rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-600">medication</span>
             Create Prescription
           </h3>
@@ -890,7 +881,7 @@ function QuickCreatePrescriptionModal({ appointment, onClose, onSave }) {
           </button>
         </div>
 
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
           Appointment #{appointment.id} - {formatDate(appointment.date)} - {appointment.patient_name}
         </p>
 
@@ -955,9 +946,9 @@ function QuickCreatePrescriptionModal({ appointment, onClose, onSave }) {
 function ViewPrescriptionModal({ prescription, appointment, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl border border-sky-100 bg-white p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-lg rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-600">medication</span>
             Prescription Details
           </h3>
@@ -967,7 +958,7 @@ function ViewPrescriptionModal({ prescription, appointment, onClose }) {
         </div>
 
         <div className="space-y-4">
-          <div className="flex items-center gap-4 pb-4 border-b border-sky-100">
+          <div className="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
               <span className="material-symbols-outlined text-2xl">prescriptions</span>
             </div>
@@ -1016,9 +1007,9 @@ function QuickEditPrescriptionModal({ prescription, appointment, onClose, onSave
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-xl rounded-2xl border border-sky-100 bg-white p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-xl rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <span className="material-symbols-outlined text-sky-600">edit</span>
             Edit Prescription
           </h3>
@@ -1027,9 +1018,9 @@ function QuickEditPrescriptionModal({ prescription, appointment, onClose, onSave
           </button>
         </div>
 
-        <p className="text-sm text-slate-500 mb-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
           {appointment?.patient_name || `Appointment #${prescription.appointment_id}`}
-          {appointment && ` � ${formatDate(appointment.date)}`}
+          {appointment && ` — ${formatDate(appointment.date)}`}
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -1088,17 +1079,17 @@ function QuickEditPrescriptionModal({ prescription, appointment, onClose, onSave
 function ConfirmDeletePrescriptionModal({ prescription, appointment, onClose, onConfirm }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div className="w-full max-w-sm rounded-2xl border border-rose-100 bg-white p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-sm rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-center mb-4">
-          <div className="h-14 w-14 rounded-full bg-rose-100 flex items-center justify-center">
-            <span className="material-symbols-outlined text-rose-600 text-3xl">warning</span>
+          <div className="h-14 w-14 rounded-full bg-rose-100 dark:bg-rose-500/10 flex items-center justify-center">
+            <span className="material-symbols-outlined text-rose-600 dark:text-rose-400 text-3xl">warning</span>
           </div>
         </div>
 
-        <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Delete Prescription</h3>
-        <p className="text-sm text-slate-500 text-center mb-6">
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 text-center mb-2">Delete Prescription</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 text-center mb-6">
           Delete prescription for
-          <span className="font-semibold text-slate-800"> {appointment?.patient_name || `Appointment #${prescription.appointment_id}`}</span>?
+          <span className="font-semibold text-slate-800 dark:text-slate-200"> {appointment?.patient_name || `Appointment #${prescription.appointment_id}`}</span>?
           This action cannot be undone.
         </p>
 
@@ -1108,9 +1099,9 @@ function ConfirmDeletePrescriptionModal({ prescription, appointment, onClose, on
           </button>
           <button
             onClick={onConfirm}
-            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold border border-rose-200 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">delete</span>
+            <span className="material-symbols-outlined text-base">delete</span>
             Delete
           </button>
         </div>

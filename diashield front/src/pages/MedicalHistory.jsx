@@ -280,7 +280,7 @@ export default function MedicalHistory() {
               </button>
               <button
                 type="button"
-                className="btn-glass px-4 py-2 rounded text-white bg-gray-500 hover:bg-gray-600"
+                 className="btn-glass px-4 py-2 rounded text-white bg-gray-500 dark:bg-gray-700 hover:bg-gray-600"
                 onClick={() => {
                   setShowForm(false);
                   setEditingId(null);

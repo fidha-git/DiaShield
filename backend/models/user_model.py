@@ -147,3 +147,9 @@ class User(Base):
         back_populates="user",
         uselist=False
     )
+
+    laboratory_reports = relationship(
+        "LaboratoryReport",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )

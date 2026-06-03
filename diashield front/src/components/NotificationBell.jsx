@@ -47,9 +47,9 @@ export default function NotificationBell() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg hover:bg-sky-100 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors"
       >
-        <span className="material-symbols-outlined text-slate-400">notifications</span>
+        <span className="material-symbols-outlined text-slate-400 dark:text-slate-300">notifications</span>
         {unread > 0 && (
           <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
             {unread > 9 ? "9+" : unread}
@@ -57,23 +57,23 @@ export default function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl bg-white border border-sky-100 shadow-lg z-50">
-          <div className="p-3 border-b border-sky-100">
-            <h3 className="font-semibold text-slate-900 text-sm">Notifications</h3>
+        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl bg-white dark:bg-slate-800/95 border border-sky-100 dark:border-slate-700 shadow-lg z-50">
+          <div className="p-3 border-b border-sky-100 dark:border-slate-700">
+            <h3 className="font-semibold text-slate-900 dark:text-slate-100 text-sm">Notifications</h3>
           </div>
           {notifications.length === 0 ? (
-            <div className="p-6 text-center text-slate-400 text-sm">
+            <div className="p-6 text-center text-slate-400 dark:text-slate-500 text-sm">
               No notifications yet
             </div>
           ) : (
             notifications.map((n) => (
               <div
                 key={n.id}
-                className={`p-3 border-b border-sky-100 hover:bg-sky-50 cursor-pointer transition-colors ${!n.is_read ? "bg-sky-50" : ""}`}
+                className={`p-3 border-b border-sky-100 dark:border-slate-700 hover:bg-sky-50 dark:hover:bg-sky-900/20 cursor-pointer transition-colors ${!n.is_read ? "bg-sky-50 dark:bg-sky-900/15" : ""}`}
                 onClick={() => !n.is_read && handleMarkRead(n.id)}
               >
-                <p className="text-slate-900 text-sm">{n.title || n.message}</p>
-                <p className="text-slate-400 text-[11px] mt-1">
+                <p className="text-slate-900 dark:text-slate-100 text-sm">{n.title || n.message}</p>
+                <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1">
                   {new Date(n.created_at).toLocaleString()}
                 </p>
               </div>
