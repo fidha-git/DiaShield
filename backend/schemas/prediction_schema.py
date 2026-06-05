@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # Request schema for diabetes prediction inputs
@@ -15,6 +15,62 @@ class PredictionRequest(BaseModel):
     bmi: float = Field(..., description="Body mass index")
     diabetes_pedigree: float = Field(..., description="Diabetes pedigree function")
     age: int = Field(..., description="Age in years")
+
+    @field_validator("age")
+    @classmethod
+    def validate_age(cls, v):
+        if v < 1 or v > 120:
+            raise ValueError("Age must be between 1 and 120")
+        return v
+
+    @field_validator("glucose")
+    @classmethod
+    def validate_glucose(cls, v):
+        if v < 0 or v > 600:
+            raise ValueError("Glucose must be between 0 and 600 mg/dL")
+        return v
+
+    @field_validator("blood_pressure")
+    @classmethod
+    def validate_blood_pressure(cls, v):
+        if v < 20 or v > 300:
+            raise ValueError("Blood pressure must be between 20 and 300 mm Hg")
+        return v
+
+    @field_validator("bmi")
+    @classmethod
+    def validate_bmi(cls, v):
+        if v < 10 or v > 100:
+            raise ValueError("BMI must be between 10 and 100 kg/m\u00b2")
+        return v
+
+    @field_validator("skin_thickness")
+    @classmethod
+    def validate_skin_thickness(cls, v):
+        if v < 0 or v > 100:
+            raise ValueError("Skin thickness must be between 0 and 100 mm")
+        return v
+
+    @field_validator("insulin")
+    @classmethod
+    def validate_insulin(cls, v):
+        if v < 0 or v > 1000:
+            raise ValueError("Insulin must be between 0 and 1000 IU/mL")
+        return v
+
+    @field_validator("diabetes_pedigree")
+    @classmethod
+    def validate_diabetes_pedigree(cls, v):
+        if v < 0 or v > 5:
+            raise ValueError("Diabetes pedigree function must be between 0 and 5")
+        return v
+
+    @field_validator("pregnancies")
+    @classmethod
+    def validate_pregnancies(cls, v):
+        if v < 0 or v > 20:
+            raise ValueError("Number of pregnancies must be between 0 and 20")
+        return v
 
 
 # Response schema for prediction results

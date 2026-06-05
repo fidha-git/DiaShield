@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import API from "../services/api"
 import { AIHealthcareIllustration } from "../components/Illustrations"
+import { formatRisk } from "../utils/formatRisk"
 
 function AnimatedCounter({ target, suffix = "" }) {
   const [value, setValue] = useState(0)
@@ -187,22 +188,13 @@ export default function DiabetesPrediction() {
       })
       setHasPredicted(true)
 
-      const risk = Math.round(confidenceScore)
-      const riskLevel =
-        risk < 20 ? "Low Risk" : risk < 50 ? "Moderate Risk" : "High Risk"
-
-      await API.post(
-        "/prediction-history/create",
-        {
-          prediction_result: data.prediction || "Negative",
-          risk_level: riskLevel,
-          probability: confidenceScore / 100
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
     } catch (error) {
       console.log("Error:", error.response?.data || error)
-      alert(error.response?.data?.detail || "Prediction failed")
+      const detail = error.response?.data?.detail
+      const msg = Array.isArray(detail)
+        ? detail.map(e => e.msg || e.message).join("\n")
+        : detail || "Prediction failed"
+      alert(msg)
     } finally {
       setLoading(false)
     }
@@ -386,7 +378,7 @@ export default function DiabetesPrediction() {
                   <span>Confidence Score</span>
                   <span className="font-semibold text-slate-700 dark:text-slate-300">
                     {hasPredicted
-                      ? confidenceScore.toFixed(1) + "%"
+                      ? formatRisk(confidenceScore / 100)
                       : "—"}
                   </span>
                 </div>
@@ -397,6 +389,37 @@ export default function DiabetesPrediction() {
                   />
                 </div>
               </div>
+
+              {/* Top Factors (Explainability) */}
+              {hasPredicted && predictionResult.top_factors && predictionResult.top_factors.length > 0 && (
+                <div className="mb-6 rounded-2xl border border-sky-100 dark:border-slate-700/50 bg-sky-50/50 dark:bg-sky-900/10 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-sm">insights</span>
+                    Why this prediction?
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {predictionResult.top_factors.slice(0, 5).map((f, i) => {
+                      const up = f.direction === "Increase Risk";
+                      const color = up
+                        ? "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/30"
+                        : "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800/30";
+                      return (
+                        <span key={i}
+                          className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold border ${color}`}
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            {up ? "arrow_upward" : "arrow_downward"}
+                          </span>
+                          {f.feature === "BloodPressure" ? "Blood Pressure"
+                            : f.feature === "DiabetesPedigreeFunction" ? "Diabetes Pedigree"
+                            : f.feature === "SkinThickness" ? "Skin Thickness"
+                            : f.feature}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Prediction Text */}
               <div className={`flex-1 rounded-2xl border p-5 ${riskMeta.bg} ${riskMeta.border} mb-6`}>
@@ -422,7 +445,7 @@ export default function DiabetesPrediction() {
 
               {/* History Link */}
               <Link
-                to="/history"
+                to="/prediction-history"
                 className="group flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-sky-100 text-sky-600 text-sm font-semibold transition-all duration-200 hover:bg-sky-50 dark:hover:bg-sky-900/30 hover:border-sky-200 hover:shadow-sm"
               >
                 <span className="material-symbols-outlined text-lg group-hover:translate-x-[-2px] transition-transform">history</span>

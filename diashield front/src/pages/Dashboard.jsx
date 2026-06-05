@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { fetchPatientProfile, fetchDashboardStats } from '../services/dashboardService'
 import { fetchMonthlyAnalytics } from '../services/analyticsService'
 import { HealthcareHero } from '../components/Illustrations'
+import { formatRisk } from '../utils/formatRisk'
 
 const GREETINGS = [
   { hr: [5, 12], text: 'Morning', icon: 'wb_sunny' },
@@ -169,9 +170,9 @@ export default function Dashboard() {
   const formatPct = () => {
     const p = dashboard?.latest_prediction?.probability
     if (p == null || (typeof p === 'string' && p.trim() === '')) return 'N/A'
-    let val = Number(p)
+    const val = Number(p)
     if (isNaN(val)) return 'N/A'
-    if (val > 0 && val <= 1) val = Math.round(val * 100)
+    if (val > 0 && val <= 1) return formatRisk(val)
     return `${Math.round(val)}%`
   }
   const risk = dashboard?.latest_prediction?.risk_level

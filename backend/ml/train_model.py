@@ -31,8 +31,17 @@ def main():
             f"Expected target column '{target_column}' not found in dataset columns: {list(data.columns)}"
         )
 
-    # Use only the fields that the API will send for prediction
-    feature_columns = ["Age", "BMI", "Glucose", "BloodPressure"]
+    # Use the same fields that the API sends for prediction
+    feature_columns = [
+        "Pregnancies",
+        "Glucose",
+        "BloodPressure",
+        "SkinThickness",
+        "Insulin",
+        "BMI",
+        "DiabetesPedigreeFunction",
+        "Age",
+    ]
     missing_features = [col for col in feature_columns if col not in data.columns]
     if missing_features:
         raise ValueError(

@@ -1,0 +1,13 @@
+BMI,Probability,Prediction,RiskLevel
+18,0.185305,Negative,Low Risk
+20,0.210837,Negative,Low Risk
+22,0.23891,Negative,Low Risk
+24,0.269503,Negative,Low Risk
+26,0.302511,Negative,Low Risk
+28,0.337744,Negative,Low Risk
+30,0.374915,Positive,High Risk
+32,0.413649,Positive,High Risk
+35,0.473673,Positive,High Risk
+38,0.534426,Positive,High Risk
+40,0.574423,Positive,High Risk
+45,0.668994,Positive,High Risk

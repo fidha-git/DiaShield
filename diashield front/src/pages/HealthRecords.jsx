@@ -7,6 +7,7 @@ function AddReadingModal({ open, onClose, onSuccess, editRecord }) {
   const isEdit = !!editRecord
   const [form, setForm] = useState({
     blood_sugar: '',
+    glucose_period: '',
     blood_pressure: '',
     heart_rate: '',
     bmi: '',
@@ -22,6 +23,7 @@ function AddReadingModal({ open, onClose, onSuccess, editRecord }) {
       if (isEdit && editRecord) {
         setForm({
           blood_sugar: editRecord.blood_sugar || '',
+          glucose_period: editRecord.glucose_period || '',
           blood_pressure: editRecord.blood_pressure || '',
           heart_rate: editRecord.heart_rate || '',
           bmi: editRecord.bmi || '',
@@ -29,7 +31,7 @@ function AddReadingModal({ open, onClose, onSuccess, editRecord }) {
           notes: editRecord.notes || ''
         })
       } else {
-        setForm({ blood_sugar: '', blood_pressure: '', heart_rate: '', bmi: '', weight: '', notes: '' })
+        setForm({ blood_sugar: '', glucose_period: '', blood_pressure: '', heart_rate: '', bmi: '', weight: '', notes: '' })
       }
       setError('')
       setSuccess('')
@@ -96,6 +98,18 @@ function AddReadingModal({ open, onClose, onSuccess, editRecord }) {
           <div>
             <label className="block font-label-md text-muted mb-1">Blood Sugar <span className="text-red-500">*</span></label>
             <input name="blood_sugar" type="number" min="0" step="any" value={form.blood_sugar} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required />
+          </div>
+          <div>
+            <label className="block font-label-md text-muted mb-1">Measurement Window</label>
+            <select name="glucose_period" value={form.glucose_period} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500">
+              <option value="">Select</option>
+              <option value="Fasting">Fasting</option>
+              <option value="After Breakfast">After Breakfast</option>
+              <option value="After Lunch">After Lunch</option>
+              <option value="Before Dinner">Before Dinner</option>
+              <option value="After Dinner">After Dinner</option>
+              <option value="Random">Random</option>
+            </select>
           </div>
           <div>
             <label className="block font-label-md text-muted mb-1">Blood Pressure <span className="text-red-500">*</span></label>
@@ -343,7 +357,7 @@ export default function HealthRecords() {
                     sortedRecords.map((rec, i) => (
                       <tr key={rec.id || i} className="hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors group">
                         <td className="py-4 text-slate-900 dark:text-slate-100 font-medium">{rec.recorded_at ? new Date(rec.recorded_at).toLocaleDateString() : '--'}</td>
-                        <td className="py-4 text-slate-500 dark:text-slate-400">{rec.glucose_period || '--'}</td>
+                        <td className="py-4 text-slate-500 dark:text-slate-400">{rec.glucose_period ?? 'Not Specified'}</td>
                         <td className="py-4"><span className={`font-semibold ${rec.blood_sugar && rec.blood_sugar > 140 ? 'text-cyan-500' : 'text-sky-600'}`}>{rec.blood_sugar ? `${rec.blood_sugar} mg/dL` : '--'}</span></td>
                         <td className="py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">
                           {rec.notes || '--'}

@@ -22,6 +22,7 @@ class HealthRecord(Base):
     id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.id"))
     blood_sugar = Column(String, nullable=False)
+    glucose_period = Column(String, nullable=True)
     blood_pressure = Column(String, nullable=False)
     heart_rate = Column(String, nullable=False)
     bmi = Column(String, nullable=False)

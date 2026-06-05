@@ -1,0 +1,76 @@
+{
+  "rows": [
+    {
+      "Glucose": 70,
+      "Probability": 0.065478,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 80,
+      "Probability": 0.086674,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 90,
+      "Probability": 0.114017,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 100,
+      "Probability": 0.14874,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 110,
+      "Probability": 0.191939,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 120,
+      "Probability": 0.244285,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 126,
+      "Probability": 0.280084,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 130,
+      "Probability": 0.305676,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "Glucose": 140,
+      "Probability": 0.374915,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "Glucose": 160,
+      "Probability": 0.526403,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "Glucose": 180,
+      "Probability": 0.671937,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "Glucose": 200,
+      "Probability": 0.789344,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    }
+  ]
+}

@@ -16,7 +16,15 @@ def create_prediction_history(db: Session, patient_id: int, data: PredictionHist
         patient_id=patient_id,
         prediction_result=data.prediction_result,
         risk_level=data.risk_level,
-        probability=data.probability
+        probability=data.probability,
+        glucose=data.glucose,
+        bmi=data.bmi,
+        blood_pressure=data.blood_pressure,
+        age=data.age,
+        pregnancies=data.pregnancies,
+        skin_thickness=data.skin_thickness,
+        insulin=data.insulin,
+        diabetes_pedigree=data.diabetes_pedigree,
     )
     db.add(prediction)
     db.commit()

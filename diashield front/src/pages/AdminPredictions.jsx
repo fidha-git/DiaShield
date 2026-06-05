@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { formatRisk } from "../utils/formatRisk";
 import {
   ResponsiveContainer,
   PieChart,
@@ -259,7 +260,7 @@ export default function AdminPredictions() {
                         <div key={p.id} className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2.5">
                           <div className="flex items-center justify-between gap-2">
                             <p className="text-sm font-semibold text-rose-800 truncate">{patient?.username || `Patient #${p.patient_id}`}</p>
-                            <Badge tone="rose">{p.probabilityPct}%</Badge>
+                            <Badge tone="rose">{formatRisk(p.probability)}</Badge>
                           </div>
                           <p className="text-xs text-rose-700 mt-1">Prediction #{p.id}</p>
                         </div>
@@ -292,7 +293,7 @@ export default function AdminPredictions() {
                           <td className="px-4 py-3 text-sm text-slate-800">{patient?.username || `Patient #${p.patient_id}`}</td>
                           <td className="px-4 py-3"><Badge tone={p.resultLabel === "Positive" ? "rose" : "emerald"}>{p.resultLabel}</Badge></td>
                           <td className="px-4 py-3"><Badge tone={toRiskTone(p.risk)}>{p.risk}</Badge></td>
-                          <td className="px-4 py-3 text-sm font-semibold text-slate-700">{p.probabilityPct}%</td>
+                          <td className="px-4 py-3 text-sm font-semibold text-slate-700">{formatRisk(p.probability)}</td>
                           <td className="px-4 py-3 text-sm text-slate-500">{p.created_at ? new Date(p.created_at).toLocaleString() : "-"}</td>
                         </tr>
                       );

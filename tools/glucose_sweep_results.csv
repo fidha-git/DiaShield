@@ -1,0 +1,13 @@
+Glucose,Probability,Prediction,RiskLevel
+70,0.065478,Negative,Low Risk
+80,0.086674,Negative,Low Risk
+90,0.114017,Negative,Low Risk
+100,0.14874,Negative,Low Risk
+110,0.191939,Negative,Low Risk
+120,0.244285,Negative,Low Risk
+126,0.280084,Negative,Low Risk
+130,0.305676,Negative,Low Risk
+140,0.374915,Positive,High Risk
+160,0.526403,Positive,High Risk
+180,0.671937,Positive,High Risk
+200,0.789344,Positive,High Risk

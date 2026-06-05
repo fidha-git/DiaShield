@@ -11,6 +11,17 @@ class PredictionHistory(Base):
     prediction_result = Column(String, nullable=False)
     risk_level = Column(String, nullable=False)
     probability = Column(Float, nullable=False)
+
+    # Input features stored alongside prediction for history display
+    glucose = Column(Float, nullable=True)
+    bmi = Column(Float, nullable=True)
+    blood_pressure = Column(Float, nullable=True)
+    age = Column(Integer, nullable=True)
+    pregnancies = Column(Integer, nullable=True)
+    skin_thickness = Column(Float, nullable=True)
+    insulin = Column(Float, nullable=True)
+    diabetes_pedigree = Column(Float, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationship to Patient

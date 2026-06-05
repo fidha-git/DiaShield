@@ -1,0 +1,76 @@
+{
+  "rows": [
+    {
+      "BMI": 18,
+      "Probability": 0.185305,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 20,
+      "Probability": 0.210837,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 22,
+      "Probability": 0.23891,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 24,
+      "Probability": 0.269503,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 26,
+      "Probability": 0.302511,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 28,
+      "Probability": 0.337744,
+      "Prediction": "Negative",
+      "RiskLevel": "Low Risk"
+    },
+    {
+      "BMI": 30,
+      "Probability": 0.374915,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "BMI": 32,
+      "Probability": 0.413649,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "BMI": 35,
+      "Probability": 0.473673,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "BMI": 38,
+      "Probability": 0.534426,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "BMI": 40,
+      "Probability": 0.574423,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    },
+    {
+      "BMI": 45,
+      "Probability": 0.668994,
+      "Prediction": "Positive",
+      "RiskLevel": "High Risk"
+    }
+  ]
+}

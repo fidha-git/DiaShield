@@ -1,4 +1,5 @@
 import api from "./api";
+import { formatRisk } from "../utils/formatRisk";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -124,7 +125,7 @@ function buildTimeline(appointments, medicalHistory, healthRecords, predictions)
       title: `AI Risk Assessment — ${pred.risk_level || "N/A"}`,
       subtitle: `Result: ${pred.prediction_result || "N/A"}`,
       doctor: "AI Model",
-      details: `Confidence: ${pred.probability ? Math.round(pred.probability * 100) : "N/A"}%`,
+      details: `Confidence: ${pred.probability ? formatRisk(pred.probability) : "N/A"}`,
       raw: pred,
     });
   });

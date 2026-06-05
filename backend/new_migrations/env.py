@@ -28,6 +28,8 @@ from models.doctor_availability_model import DoctorAvailability
 from models.health_model import HealthLog
 from models.notification_model import Notification
 from models.prediction_model import Prediction
+from models.prediction_history_model import PredictionHistory
+from models.patient_model import Patient
 from models.reminder_model import Reminder
 
 

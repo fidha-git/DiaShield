@@ -14,6 +14,7 @@ import Profile from './pages/Profile';
 import MedicalHistory from './pages/HealthTimeline';
 import HealthRecords from './pages/HealthRecords';
 import DiabetesPrediction from './pages/DiabetesPrediction';
+import PredictionHistory from './pages/PredictionHistory';
 import Appointments from './pages/Appointments';
 import ChatAssistant from './pages/ChatAssistant';
 
@@ -63,6 +64,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/history" element={<MedicalHistory />} />
           <Route path="/records" element={<HealthRecords />} />
           <Route path="/prediction" element={<DiabetesPrediction />} />
+          <Route path="/prediction-history" element={<PredictionHistory />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/chat" element={<ChatAssistant />} />
         </Route>

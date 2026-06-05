@@ -7,6 +7,7 @@ from datetime import datetime
 
 class HealthRecordBase(BaseModel):
     blood_sugar: str
+    glucose_period: Optional[str] = None
     blood_pressure: str
     heart_rate: str
     bmi: str
@@ -20,6 +21,7 @@ class HealthRecordCreate(HealthRecordBase):
 
 class HealthRecordUpdate(BaseModel):
     blood_sugar: Optional[str] = None
+    glucose_period: Optional[str] = None
     blood_pressure: Optional[str] = None
     heart_rate: Optional[str] = None
     bmi: Optional[str] = None
