@@ -36,7 +36,7 @@ function healthStatusFromRisk(risk = "") {
   return "Unknown";
 }
 
-const PROFILE_BASE = "http://127.0.0.1:8000";
+const PROFILE_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 const PAGE_SIZE = 5;
 
 export default function AdminPatients() {

@@ -26,7 +26,7 @@ export default function DoctorProfile() {
   const fileInputRef = useRef(null);
 
   const profileImageUrl = profile?.profile_image
-    ? `http://127.0.0.1:8000${profile.profile_image}`
+    ? `${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}${profile.profile_image}`
     : null;
 
   useEffect(() => {

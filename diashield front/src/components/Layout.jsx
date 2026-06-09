@@ -20,7 +20,7 @@ export default function Layout() {
     setSosSending(true);
     try {
       const token = localStorage.getItem("token");
-      await fetch("http://127.0.0.1:8000/notifications/sos", {
+      await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"}/notifications/sos`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ message: "EMERGENCY SOS triggered by patient" }),

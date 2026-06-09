@@ -38,7 +38,7 @@ const EMPTY_FORM = {
   bio: "",
 };
 
-const PROFILE_BASE = "http://127.0.0.1:8000";
+const PROFILE_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 function Modal({ title, icon, children, onClose, wide = false }) {
   return (

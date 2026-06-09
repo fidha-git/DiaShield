@@ -24,6 +24,7 @@ import { HealthcareHero } from "../components/Illustrations";
 import SimplePagination from "../components/ui/SimplePagination";
 
 const PAGE_SIZE = 5;
+const PROFILE_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 function roleLabel(role) {
   if (!role) return "Patient";
@@ -282,7 +283,7 @@ export default function AdminUsers() {
                       </td>
                       <td className="px-4 py-3 align-middle">
                         <div className="flex items-center gap-3">
-                          <Avatar name={user.username || "User"} src={user.profile_image ? `http://127.0.0.1:8000${user.profile_image}` : ""} size="sm" />
+                          <Avatar name={user.username || "User"} src={user.profile_image ? `${PROFILE_BASE}${user.profile_image}` : ""} size="sm" />
                           <div>
                             <p className="text-sm font-semibold text-slate-900">{user.username || "Unknown"}</p>
                             <p className="text-xs text-slate-500">ID #{user.id}</p>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import API from '../services/api'
 
-const AVATAR_BASE = "http://127.0.0.1:8000";
+const AVATAR_BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 export default function Profile() {
   const [formData, setFormData] = useState({
