@@ -28,8 +28,10 @@ import {
   AdminToast,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
 
 const RISK_COLORS = ["#22C55E", "#F59E0B", "#EF4444"];
+const PAGE_SIZE = 5;
 
 function toRiskTone(risk = "") {
   const v = risk.toLowerCase();
@@ -55,6 +57,7 @@ export default function AdminPredictions() {
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
   const [resultFilter, setResultFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
@@ -108,6 +111,20 @@ export default function AdminPredictions() {
       return matchesSearch && matchesRisk && matchesResult;
     });
   }, [enriched, search, riskFilter, resultFilter, userMap]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedPredictions = useMemo(
+    () => filtered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE
+    ),
+    [filtered, currentPage]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   const riskDistribution = useMemo(() => {
     const low = filtered.filter((p) => (p.risk || "").toLowerCase().includes("low")).length;
@@ -177,14 +194,14 @@ export default function AdminPredictions() {
 
       <AdminPanel>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <AdminInput placeholder="Search by patient id / username" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <AdminSelect value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}>
+          <AdminInput placeholder="Search by patient id / username" value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} />
+          <AdminSelect value={riskFilter} onChange={(e) => { setRiskFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Risk Levels</option>
             <option value="low">Low</option>
             <option value="moderate">Moderate</option>
             <option value="high">High</option>
           </AdminSelect>
-          <AdminSelect value={resultFilter} onChange={(e) => setResultFilter(e.target.value)}>
+          <AdminSelect value={resultFilter} onChange={(e) => { setResultFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Results</option>
             <option value="positive">Positive</option>
             <option value="negative">Negative</option>
@@ -273,7 +290,7 @@ export default function AdminPredictions() {
 
             <AdminPanel title="Prediction History" icon="table_view">
               <div className="overflow-auto rounded-xl border border-slate-200">
-                <table className="w-full">
+                <table className="w-full min-w-[650px]">
                   <thead className="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
                     <tr>
                       <th className="text-left px-4 py-3 text-[11px] uppercase tracking-[0.12em] text-slate-500 font-semibold">ID</th>
@@ -285,7 +302,7 @@ export default function AdminPredictions() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((p) => {
+                    {paginatedPredictions.map((p) => {
                       const patient = userMap.get(p.patient_id);
                       return (
                         <tr key={p.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
@@ -301,6 +318,15 @@ export default function AdminPredictions() {
                   </tbody>
                 </table>
               </div>
+
+              <SimplePagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filtered.length}
+                pageSize={PAGE_SIZE}
+                onPageChange={setCurrentPage}
+                itemLabel="predictions"
+              />
             </AdminPanel>
           </>
         )}

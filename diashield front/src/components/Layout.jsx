@@ -9,6 +9,7 @@ import NotificationBell from "./NotificationBell";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Layout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSos, setShowSos] = useState(false);
   const [sosSending, setSosSending] = useState(false);
   const [sosSent, setSosSent] = useState(false);
@@ -36,52 +37,23 @@ export default function Layout() {
 // console.log("Token value", localStorage.getItem("token"));
   }, [location.pathname]);
 
-	const sidebarLinks = [
-		{
-			path: "/dashboard",
-			label: "Dashboard",
-			icon: "dashboard",
-		},
-		{
-			path: "/profile",
-			label: "Profile",
-			icon: "person",
-		},
-		{
-			path: "/history",
-			label: "Health Timeline",
-			icon: "timeline",
-		},
-		{
-			path: "/records",
-			label: "Health Records",
-			icon: "description",
-		},
-		{
-			path: "/prediction",
-			label: "Predictions",
-			icon: "query_stats",
-		},
-		{
-			path: "/appointments",
-			label: "Appointments",
-			icon: "calendar_today",
-		},
-		{
-			path: "/chat",
-			label: "Chat Assistant",
-			icon: "smart_toy",
-		},
-	];
+  const sidebarLinks = [
+    { path: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { path: "/prediction", label: "Predictions", icon: "query_stats" },
+    { path: "/appointments", label: "Appointments", icon: "calendar_today" },
+    { path: "/records", label: "Health Records", icon: "description" },
+    { path: "/chat", label: "Chat Assistant", icon: "smart_toy" },
+  ];
 
   return (
     <div className="portal-shell">
-      {/* Sidebar */}
-      <div className="portal-sidebar w-[280px] flex flex-col p-6 relative">
-        {/* Decorative blob */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <div className={`portal-sidebar fixed md:relative w-[280px] flex flex-col p-6 z-40 transition-transform duration-300 -translate-x-full md:translate-x-0 ${sidebarOpen ? "translate-x-0" : ""}`}>
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-sky-300/20 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-300/20 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-        {/* Logo */}
         <div className="relative z-10 flex items-center gap-3 mb-8">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
             <span className="material-symbols-outlined text-white text-2xl">health_and_safety</span>
@@ -91,7 +63,6 @@ export default function Layout() {
             <p className="text-slate-400 dark:text-slate-500 text-[11px] font-medium uppercase tracking-wider">Patient Portal</p>
           </div>
         </div>
-        {/* Main Navigation */}
         <div className="relative z-10 space-y-1">
           {sidebarLinks.map((link) => (
             <NavLink
@@ -112,8 +83,8 @@ export default function Layout() {
             onClick={() => navigate("/profile")}
             className="btn-secondary w-full justify-start text-left mt-6"
           >
-            <span className="material-symbols-outlined">settings</span>
-            Settings
+            <span className="material-symbols-outlined">person</span>
+            Profile & Settings
           </button>
           {/* Sign out */}
           <button
@@ -142,6 +113,9 @@ export default function Layout() {
       {/* Main content */}
       <main className="portal-main">
         <div className="portal-topbar">
+          <button className="md:hidden mr-auto h-10 w-10 rounded-xl border border-sky-200 bg-white text-sky-700 flex items-center justify-center hover:bg-sky-50 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-sky-200 dark:hover:bg-slate-700" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <span className="material-symbols-outlined text-[20px]">menu</span>
+          </button>
           <NotificationBell />
           <ThemeToggle />
         </div>

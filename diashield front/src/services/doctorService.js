@@ -27,6 +27,12 @@ export const updateDoctorSlot = (slotId, data) =>
 export const deleteDoctorSlot = (slotId) =>
   API.delete(`/doctor/slot/${slotId}`);
 
+export const getAppointmentBySlot = (slotId) =>
+  API.get(`/appointments/slot/${slotId}`);
+
+export const doctorCancelAppointment = (appointmentId) =>
+  API.put(`/appointments/doctor-cancel/${appointmentId}`);
+
 export const getClinicalNote = (appointmentId) =>
   API.get(`/doctor-notes/${appointmentId}`);
 
@@ -61,3 +67,21 @@ export const uploadDoctorProfileImage = (file) => {
     headers: { "Content-Type": "multipart/form-data" },
   });
 };
+
+export const getDoctorPatientProfile = (userId) =>
+  API.get(`/doctor/patient/${userId}`);
+
+export const getDoctorPatientHealthRecords = (userId) =>
+  API.get(`/doctor/patient/${userId}/health-records`);
+
+export const getDoctorPatientPredictions = (userId) =>
+  API.get(`/doctor/patient/${userId}/predictions`);
+
+export const getDoctorPatientMedicalHistory = (userId) =>
+  API.get(`/doctor/patient/${userId}/medical-history`);
+
+export const getDoctorPatientClinicalNotes = (userId) =>
+  API.get(`/doctor/patient/${userId}/clinical-notes`);
+
+export const getDoctorPatientPrescriptions = (userId) =>
+  API.get(`/doctor/patient/${userId}/prescriptions`);

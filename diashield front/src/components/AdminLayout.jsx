@@ -67,6 +67,7 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [showSignOut, setShowSignOut] = useState(false);
   const [openGroups, setOpenGroups] = useState({
     management: true,
@@ -114,7 +115,12 @@ export default function AdminLayout() {
 
   return (
     <div className="portal-shell dark:text-slate-100">
-      <aside className={`portal-sidebar ${collapsed ? "w-[92px]" : "w-[290px]"} p-4 md:p-5 transition-all duration-300 flex flex-col`}>
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setMobileOpen(false)} />
+      )}
+
+      <aside className={`portal-sidebar fixed md:relative z-40 transition-transform duration-300 -translate-x-full md:translate-x-0 ${mobileOpen ? "translate-x-0" : ""} w-[290px] p-4 md:p-5 flex flex-col ${collapsed ? "md:w-[92px]" : "md:w-[290px]"}`}>
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3 min-w-0">
             <div className="h-11 w-11 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/25 shrink-0">
@@ -196,6 +202,9 @@ export default function AdminLayout() {
 
       <main className="portal-main overflow-auto">
         <div className="portal-topbar">
+          <button className="md:hidden mr-auto h-10 w-10 rounded-xl border border-sky-200 bg-white text-sky-700 flex items-center justify-center hover:bg-sky-50 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-sky-200 dark:hover:bg-slate-700" onClick={() => setMobileOpen(!mobileOpen)}>
+            <span className="material-symbols-outlined text-[20px]">menu</span>
+          </button>
           <ThemeToggle />
         </div>
         <div className="portal-content-wrap pb-8">

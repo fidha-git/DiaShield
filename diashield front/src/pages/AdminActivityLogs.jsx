@@ -13,6 +13,7 @@ import {
   MetricCard,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
 
 function eventType(action = "") {
   const v = action.toLowerCase();
@@ -25,12 +26,15 @@ function eventType(action = "") {
   return { icon: "notifications", label: "System", tone: "slate" };
 }
 
+const PAGE_SIZE = 5;
+
 export default function AdminActivityLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [eventFilter, setEventFilter] = useState("all");
   const [timeFilter, setTimeFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
@@ -69,16 +73,30 @@ export default function AdminActivityLogs() {
     });
   }, [logs, search, eventFilter, timeFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedLogs = useMemo(
+    () => filtered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE
+    ),
+    [filtered, currentPage]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
   const grouped = useMemo(() => {
     const map = new Map();
-    filtered.forEach((log) => {
+    paginatedLogs.forEach((log) => {
       const d = log.created_at ? new Date(log.created_at) : null;
       const key = d ? d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" }) : "Unknown Date";
       if (!map.has(key)) map.set(key, []);
       map.get(key).push(log);
     });
     return Array.from(map.entries());
-  }, [filtered]);
+  }, [paginatedLogs]);
 
   const metrics = useMemo(() => ({
     total: filtered.length,
@@ -106,8 +124,8 @@ export default function AdminActivityLogs() {
 
       <AdminPanel>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <AdminInput placeholder="Search username, action, user id" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <AdminSelect value={eventFilter} onChange={(e) => setEventFilter(e.target.value)}>
+          <AdminInput placeholder="Search username, action, user id" value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} />
+          <AdminSelect value={eventFilter} onChange={(e) => { setEventFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Event Types</option>
             <option value="registration">Registration</option>
             <option value="appointment">Appointment</option>
@@ -117,7 +135,7 @@ export default function AdminActivityLogs() {
             <option value="access">Access</option>
             <option value="system">System</option>
           </AdminSelect>
-          <AdminSelect value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
+          <AdminSelect value={timeFilter} onChange={(e) => { setTimeFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Time</option>
             <option value="24h">Last 24 hours</option>
             <option value="7d">Last 7 days</option>
@@ -171,6 +189,15 @@ export default function AdminActivityLogs() {
                 </section>
               ))}
             </div>
+
+            <SimplePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              itemLabel="activity logs"
+            />
           </AdminPanel>
         )}
       </div>

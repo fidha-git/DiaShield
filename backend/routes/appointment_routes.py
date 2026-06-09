@@ -15,6 +15,8 @@ from services.appointment_service import (
     book_appointment,
     get_user_appointments,
     cancel_appointment,
+    get_appointment_by_slot,
+    doctor_cancel_appointment,
     get_doctor_appointments,
     complete_appointment,
     reschedule_appointment,
@@ -189,6 +191,55 @@ def reschedule_appointment_route(
         new_slot_id,
         current_user.id
     )
+
+
+# -------------------------
+# Get appointment by slot
+# -------------------------
+
+@router.get(
+    "/slot/{slot_id}",
+    status_code=status.HTTP_200_OK
+)
+def get_appointment_by_slot_route(
+    slot_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(["doctor", "admin"]))
+):
+    """
+    Get appointment details for a specific slot (doctors/admin only).
+    Useful for viewing booking details from the slot management page.
+    """
+    return get_appointment_by_slot(db, slot_id)
+
+
+# -------------------------
+# Doctor cancel appointment
+# -------------------------
+
+@router.put(
+    "/doctor-cancel/{appointment_id}",
+    status_code=status.HTTP_200_OK
+)
+def doctor_cancel_appointment_route(
+    appointment_id: int,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_role(["doctor"]))
+):
+    """
+    Cancel an appointment (doctors only).
+    Frees the slot and marks the appointment as cancelled.
+    """
+    from models.doctor_model import Doctor
+    doctor = db.query(Doctor).filter(
+        Doctor.user_id == current_user.id
+    ).first()
+    if not doctor:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Doctor profile not found"
+        )
+    return doctor_cancel_appointment(db, appointment_id, doctor.id)
 
 
 # -------------------------

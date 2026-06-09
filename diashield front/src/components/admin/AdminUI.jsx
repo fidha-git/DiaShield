@@ -157,7 +157,7 @@ export function Avatar({ name, src, size = "md" }) {
 
 export function EmptyCard({ icon = "inbox", title, subtitle, action }) {
   return (
-    <div className="card-light rounded-[24px] border border-sky-100 bg-white py-16 px-6 text-center shadow-lg shadow-sky-100/40">
+    <div className="card-light rounded-[24px] border border-sky-100 bg-white py-10 sm:py-16 px-4 sm:px-6 text-center shadow-lg shadow-sky-100/40">
       <div className="mx-auto h-16 w-16 rounded-2xl bg-sky-100 flex items-center justify-center text-sky-600">
         <span className="material-symbols-outlined text-[30px]">{icon}</span>
       </div>
@@ -171,7 +171,7 @@ export function EmptyCard({ icon = "inbox", title, subtitle, action }) {
 export function TableShell({ children }) {
   return (
     <div className="card-light rounded-2xl border border-sky-100 bg-white shadow-md shadow-sky-100/50 overflow-hidden">
-      <div className="max-h-[560px] overflow-auto">{children}</div>
+      <div className="max-h-[560px] overflow-auto overflow-x-auto">{children}</div>
     </div>
   );
 }
@@ -200,7 +200,7 @@ export function AdminToast({ toast, onClose }) {
   const tone = toast.type === "success" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200";
 
   return (
-    <div className={`fixed top-6 right-6 z-[120] rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-xl ${tone}`}>
+    <div className={`fixed top-6 right-4 sm:right-6 z-[120] rounded-xl border px-4 py-3 shadow-2xl backdrop-blur-xl max-w-[90vw] ${tone}`}>
       <div className="flex items-center gap-2">
         <span className="material-symbols-outlined text-[18px]">{toast.type === "success" ? "check_circle" : "error"}</span>
         <p className="text-sm font-semibold">{toast.message}</p>

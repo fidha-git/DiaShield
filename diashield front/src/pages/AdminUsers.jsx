@@ -21,8 +21,9 @@ import {
   toneFromStatus,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 5;
 
 function roleLabel(role) {
   if (!role) return "Patient";
@@ -255,7 +256,7 @@ export default function AdminUsers() {
         ) : (
           <>
             <TableShell>
-              <table className="w-full">
+              <table className="w-full min-w-[700px]">
                 <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 z-10">
                   <tr>
                     <th className="px-4 py-3">
@@ -322,19 +323,13 @@ export default function AdminUsers() {
               </table>
             </TableShell>
 
-            <div className="flex items-center justify-between mt-4">
-              <p className="text-sm text-slate-500">
-                Showing {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length}
-              </p>
-              <div className="flex gap-2">
-                <AdminButton variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
-                  Previous
-                </AdminButton>
-                <AdminButton disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
-                  Next
-                </AdminButton>
-              </div>
-            </div>
+            <SimplePagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+            />
           </>
         )}
       </div>

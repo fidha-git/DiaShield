@@ -74,4 +74,4 @@ def remove_slot(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["doctor", "admin"]))
 ):
-    return delete_slot(slot_id, db)
+    return delete_slot(slot_id, current_user, db)

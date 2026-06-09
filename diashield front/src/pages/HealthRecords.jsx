@@ -1,452 +1,336 @@
-import React, { useState, useEffect } from 'react'
-import API from '../services/api'
-import healthRecordService from '../services/healthRecordService'
-import { EmptyHealthRecords, AIHealthcareIllustration } from '../components/Illustrations'
+import React, { useState, useEffect, useMemo } from "react";
+import API from "../services/api";
+import healthRecordService from "../services/healthRecordService";
+import { fetchHealthTimeline } from "../services/healthTimelineService";
+import { EmptyHealthRecords } from "../components/Illustrations";
 
-function AddReadingModal({ open, onClose, onSuccess, editRecord }) {
-  const isEdit = !!editRecord
-  const [form, setForm] = useState({
-    blood_sugar: '',
-    glucose_period: '',
-    blood_pressure: '',
-    heart_rate: '',
-    bmi: '',
-    weight: '',
-    notes: ''
-  })
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-
-  React.useEffect(() => {
-    if (open) {
-      if (isEdit && editRecord) {
-        setForm({
-          blood_sugar: editRecord.blood_sugar || '',
-          glucose_period: editRecord.glucose_period || '',
-          blood_pressure: editRecord.blood_pressure || '',
-          heart_rate: editRecord.heart_rate || '',
-          bmi: editRecord.bmi || '',
-          weight: editRecord.weight || '',
-          notes: editRecord.notes || ''
-        })
-      } else {
-        setForm({ blood_sugar: '', glucose_period: '', blood_pressure: '', heart_rate: '', bmi: '', weight: '', notes: '' })
-      }
-      setError('')
-      setSuccess('')
-      setSubmitting(false)
-    }
-  }, [open, isEdit, editRecord])
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm((f) => ({ ...f, [name]: value }))
-  }
-
-  const validate = () => {
-    if (!form.blood_sugar || !form.blood_pressure || !form.heart_rate || !form.bmi || !form.weight) {
-      setError('All required fields must be filled.')
-      return false
-    }
-    if (isNaN(form.blood_sugar) || isNaN(form.heart_rate) || isNaN(form.bmi) || isNaN(form.weight)) {
-      setError('Blood Sugar, Heart Rate, BMI, and Weight must be numeric.')
-      return false
-    }
-    return true
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!validate()) return
-    setSubmitting(true)
-    setError('')
-    try {
-      if (isEdit && editRecord) {
-        await API.put(`/health-record/update/${editRecord.id}`, form)
-        setSuccess('Health record updated successfully.')
-      } else {
-        const patientRes = await API.get('/patient/me')
-        const patientId = patientRes.data.id
-        await API.post('/health-record/create', { ...form, patient_id: patientId })
-        setSuccess('Health record added successfully.')
-      }
-      setTimeout(() => {
-        setSuccess('')
-        onSuccess()
-        onClose()
-      }, 800)
-    } catch (err) {
-      if (err.response?.data?.detail) {
-        setError(Array.isArray(err.response.data.detail) ? err.response.data.detail[0].msg : err.response.data.detail)
-      } else {
-        setError(isEdit ? 'Failed to update health record.' : 'Failed to add health record.')
-      }
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  if (!open) return null
-
+function SectionCard({ title, icon, iconColor, children, empty }) {
+  if (!children && empty) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-[#0F172A]/90 rounded-2xl border border-sky-100 shadow-2xl w-full max-w-md p-8 relative">
-        <button onClick={onClose} className="absolute top-3 right-3 text-slate-500 dark:text-slate-400 hover:text-sky-600 text-xl">&times;</button>
-        <h2 className="font-headline-md card-title mb-4">{isEdit ? 'Edit Health Record' : 'Add New Health Record'}</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block font-label-md text-muted mb-1">Blood Sugar <span className="text-red-500">*</span></label>
-            <input name="blood_sugar" type="number" min="0" step="any" value={form.blood_sugar} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required />
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">Measurement Window</label>
-            <select name="glucose_period" value={form.glucose_period} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500">
-              <option value="">Select</option>
-              <option value="Fasting">Fasting</option>
-              <option value="After Breakfast">After Breakfast</option>
-              <option value="After Lunch">After Lunch</option>
-              <option value="Before Dinner">Before Dinner</option>
-              <option value="After Dinner">After Dinner</option>
-              <option value="Random">Random</option>
-            </select>
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">Blood Pressure <span className="text-red-500">*</span></label>
-            <input name="blood_pressure" type="text" value={form.blood_pressure} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required placeholder="e.g. 120/80" />
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">Heart Rate <span className="text-red-500">*</span></label>
-            <input name="heart_rate" type="number" min="0" step="any" value={form.heart_rate} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required />
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">BMI <span className="text-red-500">*</span></label>
-            <input name="bmi" type="number" min="0" step="any" value={form.bmi} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required />
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">Weight <span className="text-red-500">*</span></label>
-            <input name="weight" type="number" min="0" step="any" value={form.weight} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" required />
-          </div>
-          <div>
-            <label className="block font-label-md text-muted mb-1">Notes</label>
-            <textarea name="notes" value={form.notes} onChange={handleChange} className="w-full bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-lg px-3 py-2 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500" rows={2} />
-          </div>
-          {error && <div className="text-red-500 font-label-md text-sm">{error}</div>}
-          {success && <div className="text-green-600 font-label-md text-sm">{success}</div>}
-          <button type="submit" className="w-full bg-sky-500 text-white py-2 rounded-lg font-label-md mt-2 disabled:opacity-60" disabled={submitting}>{submitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Save Record')}</button>
-        </form>
-      </div>
+    <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 dark:border-sky-900/30 rounded-2xl shadow-lg shadow-blue-200/30 overflow-hidden">
+      {title && (
+        <div className="px-5 py-4 border-b border-sky-100 dark:border-sky-900/30">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span className={`material-symbols-outlined text-lg ${iconColor}`}>{icon}</span>
+            {title}
+          </h3>
+        </div>
+      )}
+      <div className="p-5">{children || <p className="text-sm text-slate-400 text-center py-6">{empty || "No data available."}</p>}</div>
     </div>
-  )
+  );
 }
 
-function MetricCard({ title, value, status, date, border }) {
+function EmptyBlock({ message }) {
   return (
-    <div className={`bg-white dark:bg-[#0F172A]/90 rounded-[20px] p-6 border ${border} shadow-md shadow-sky-100/60 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-sky-200/60 transition-all min-h-[160px] flex flex-col justify-between`}>
-      <div>
-        <span className="block font-label-md text-slate-500 dark:text-slate-400 text-[11px] uppercase tracking-wider mb-2">{title}</span>
-        <span className="font-display-lg text-[26px] md:text-[30px] font-bold text-slate-900 dark:text-slate-100">{value}</span>
-      </div>
-      <div className="flex justify-between items-center mt-4 pt-2 border-t border-sky-100 text-[11px]">
-        <span className="font-label-md opacity-80">{status}</span>
-        <span className="font-label-md text-slate-500 dark:text-slate-400">{date ? new Date(date).toLocaleDateString() : '--'}</span>
-      </div>
+    <div className="flex flex-col items-center gap-2 py-10">
+      <div className="w-20 h-16 opacity-40"><EmptyHealthRecords className="w-full h-full" /></div>
+      <p className="text-sm text-slate-400">{message}</p>
     </div>
-  )
+  );
 }
 
 export default function HealthRecords() {
-  const [records, setRecords] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [modalOpen, setModalOpen] = useState(false)
-  const [editRecord, setEditRecord] = useState(null)
-  const [toast, setToast] = useState('')
-  const [deleteLoadingId, setDeleteLoadingId] = useState(null)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [profile, setProfile] = useState(null);
+  const [timelineData, setTimelineData] = useState(null);
+  const [records, setRecords] = useState([]);
+  const [medications, setMedications] = useState([]);
 
-  // Medications state
-  const [medications, setMedications] = useState([])
-  const [medicationsLoading, setMedicationsLoading] = useState(true)
-  const [medicationsError, setMedicationsError] = useState('')
-
-  // Fetch health records
-  const fetchRecords = async () => {
-    setLoading(true)
-    setError('')
+  const loadAll = async () => {
+    setLoading(true);
+    setError("");
     try {
-      const patientRes = await API.get('/patient/me')
-      const patientId = patientRes.data.id
-      const recRes = await API.get(`/health-record/${patientId}`)
-      setRecords(Array.isArray(recRes.data) ? recRes.data : [])
+      const [timelineRes, profileRes] = await Promise.all([
+        fetchHealthTimeline().catch(() => null),
+        API.get("/patient/me").catch(() => ({ data: null })),
+      ]);
+
+      setTimelineData(timelineRes);
+      setProfile(profileRes?.data || null);
+
+      const pid = profileRes?.data?.id;
+      if (pid) {
+        const [recRes, medsRes] = await Promise.all([
+          API.get(`/health-record/${pid}`).catch(() => ({ data: [] })),
+          healthRecordService.getMedications().catch(() => []),
+        ]);
+        setRecords(Array.isArray(recRes.data) ? recRes.data : []);
+        setMedications(Array.isArray(medsRes) ? medsRes : []);
+      }
     } catch {
-      setError('Failed to load health records')
+      setError("Failed to load health records");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+  };
+
+  useEffect(() => { loadAll(); }, []);
+
+  const latestRecord = useMemo(() => {
+    const sorted = [...records].sort((a, b) => new Date(b.recorded_at || b.created_at) - new Date(a.recorded_at || a.created_at));
+    return sorted[0] || null;
+  }, [records]);
+
+  const activeConditions = useMemo(() => {
+    const conditions = [];
+    // From medical history (self-reported chronic diseases)
+    if (timelineData?.medicalHistory?.length) {
+      const latest = timelineData.medicalHistory.reduce((a, b) => new Date(a.created_at) > new Date(b.created_at) ? a : b);
+      if (latest?.chronic_diseases) {
+        latest.chronic_diseases.split(",").map(s => s.trim()).filter(Boolean).forEach(c => {
+          if (!conditions.includes(c)) conditions.push(c);
+        });
+      }
+    }
+    // From clinical notes (doctor-diagnosed conditions)
+    if (timelineData?.appointments?.length) {
+      timelineData.appointments
+        .filter(a => a.status === "completed" && a.doctor_note?.diagnosis)
+        .forEach(a => {
+          const diag = a.doctor_note.diagnosis.trim();
+          if (diag && !conditions.includes(diag)) conditions.push(diag);
+        });
+    }
+    return conditions;
+  }, [timelineData]);
+
+  const doctorNotes = useMemo(() => {
+    if (!timelineData?.appointments?.length) return [];
+    return timelineData.appointments
+      .filter(a => a.status === "completed" && a.doctor_note?.notes)
+      .map(a => ({ id: `note-${a.id}`, doctor: a.doctor_name || "Healthcare Provider", date: a.date || a.created_at, note: a.doctor_note }))
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [timelineData]);
+
+  const { name, age, gender, blood_group, weight } = profile || {};
+  const calcBmi = (h, w) => {
+    const hNum = parseFloat(h), wNum = parseFloat(w);
+    if (!isNaN(hNum) && !isNaN(wNum) && hNum > 0) return (wNum / Math.pow(hNum / 100, 2)).toFixed(1);
+    return null;
+  };
+  const height = profile?.height || null;
+  const latestWeight = weight || latestRecord?.weight || null;
+  const bmi = latestRecord?.bmi ? parseFloat(latestRecord.bmi).toFixed(1) : calcBmi(height, latestWeight);
+
+  if (loading) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="h-8 w-48 bg-sky-100 dark:bg-sky-900/30 rounded-lg" />
+          <div className="h-4 w-72 bg-sky-100 dark:bg-sky-900/30 rounded-lg" />
+          <div className="h-44 bg-sky-100 dark:bg-sky-900/30 rounded-2xl" />
+          <div className="h-32 bg-sky-100 dark:bg-sky-900/30 rounded-2xl" />
+          <div className="h-32 bg-sky-100 dark:bg-sky-900/30 rounded-2xl" />
+        </div>
+      </div>
+    );
   }
 
-  // Fetch medications
-  const fetchMedications = async () => {
-    setMedicationsLoading(true)
-    setMedicationsError('')
-    try {
-      console.log('[HEALTH_RECORDS] Fetching medications...')
-      const meds = await healthRecordService.getMedications()
-      console.log('[HEALTH_RECORDS] Medications fetched successfully:', meds)
-      if (Array.isArray(meds)) {
-        setMedications(meds)
-        if (meds.length === 0) {
-          console.log('[HEALTH_RECORDS] No medications found (empty array)')
-        }
-      } else {
-        console.warn('[HEALTH_RECORDS] Medications response is not an array:', meds)
-        setMedications([])
-      }
-    } catch (err) {
-      console.error('[HEALTH_RECORDS] Error fetching medications:', err)
-      console.error('[HEALTH_RECORDS] Error response status:', err.response?.status)
-      console.error('[HEALTH_RECORDS] Error response data:', err.response?.data)
-      
-      // Provide specific error messages based on error type
-      let errorMessage = 'Failed to load medications'
-      if (err.response?.status === 401) {
-        errorMessage = 'Unauthorized: Please log in again'
-      } else if (err.response?.status === 403) {
-        errorMessage = 'Access denied: You do not have permission to view medications'
-      } else if (err.response?.status === 404) {
-        errorMessage = 'Medications endpoint not found'
-      } else if (err.response?.status === 500) {
-        errorMessage = 'Server error: Please try again later'
-      } else if (err.message === 'Network Error') {
-        errorMessage = 'Network error: Please check your connection'
-      }
-      
-      setMedicationsError(errorMessage)
-      setMedications([])
-    } finally {
-      setMedicationsLoading(false)
-    }
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-14 h-14 mx-auto mb-4 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+            <span className="material-symbols-outlined text-2xl text-red-500">error_outline</span>
+          </div>
+          <p className="text-base font-semibold text-slate-900 dark:text-slate-100 mb-1">Failed to load data</p>
+          <p className="text-sm text-slate-500 mb-4">{error}</p>
+          <button onClick={loadAll}
+            className="px-5 py-2.5 rounded-xl bg-sky-500 text-white font-semibold text-sm hover:bg-sky-600 transition-all shadow-lg shadow-sky-500/20">
+            Retry
+          </button>
+        </div>
+      </div>
+    );
   }
-
-  // Load all data on component mount
-  useEffect(() => {
-    fetchRecords()
-    fetchMedications()
-  }, [])
-
-  const sortedRecords = [...records].sort((a, b) => new Date(b.recorded_at) - new Date(a.recorded_at))
-  const latestRecord = sortedRecords[0] || null
 
   return (
-    <div className="space-y-8">
-      <div className="max-w-[1400px] mx-auto p-8">
-        <section className="relative overflow-hidden rounded-[24px] border border-cyan-300/25 shadow-[0_28px_80px_rgba(2,27,58,0.55)] backdrop-blur-xl p-12" style={{ background: 'linear-gradient(135deg, #021B3A 0%, #012A4A 50%, #013A63 100%)' }}>
-          <div className="absolute inset-0 opacity-15" style={{ backgroundImage: 'linear-gradient(rgba(56,189,248,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(56,189,248,0.18) 1px, transparent 1px)', backgroundSize: '28px 28px' }} />
-          <div className="absolute -top-28 -left-24 h-72 w-72 rounded-full bg-cyan-300/20 blur-[110px]" />
-          <div className="absolute -bottom-24 -right-24 h-80 w-80 rounded-full bg-sky-300/15 blur-[120px]" />
-          <div className="absolute top-12 left-20 h-2 w-2 rounded-full bg-cyan-200/40" />
-          <div className="absolute top-24 right-44 h-2.5 w-2.5 rounded-full bg-white/30" />
-          <div className="absolute bottom-20 left-1/3 h-1.5 w-1.5 rounded-full bg-cyan-100/40" />
+    <div className="space-y-6">
+      <div className="max-w-4xl mx-auto space-y-6">
 
-          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-10">
-            <div>
-              <header className="flex flex-col md:flex-row md:justify-between md:items-start gap-6">
-                <div>
-                  <h2 className="text-[40px] md:text-[56px] leading-[1.05] font-extrabold text-white">Health Records</h2>
-                  <p className="mt-6 text-[18px] md:text-[22px] max-w-[700px] text-white/85">Access clinical laboratory reports, medication parameters, and ongoing vital logs.</p>
-                </div>
-                <button
-                  onClick={async () => {
-                    try {
-                      const token = localStorage.getItem('token')
-                      const response = await API.get('/report/pdf', {
-                        responseType: 'blob',
-                        headers: { Authorization: `Bearer ${token}` }
-                      })
-                      const url = window.URL.createObjectURL(new Blob([response.data]))
-                      const link = document.createElement('a')
-                      link.href = url
-                      link.setAttribute('download', `diashield_health_report_${new Date().toISOString().split('T')[0]}.pdf`)
-                      document.body.appendChild(link)
-                      link.click()
-                      link.remove()
-                      window.URL.revokeObjectURL(url)
-                    } catch {
-                      alert('Failed to generate PDF report. Please try again.')
-                    }
-                  }}
-                  className="self-start whitespace-nowrap px-6 py-3 rounded-2xl border border-cyan-200/40 bg-gradient-to-r from-cyan-400/25 to-sky-400/20 text-white font-label-md shadow-[0_12px_30px_rgba(56,189,248,0.25)] hover:shadow-[0_16px_36px_rgba(56,189,248,0.35)] hover:from-cyan-400/35 hover:to-sky-400/30 transition-all duration-300 flex items-center gap-2"
-                >
-                  <span className="material-symbols-outlined text-[20px]">download</span>
-                  Export Full Clinical Record
-                </button>
-              </header>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 border border-sky-200/50 mb-3">
+              <span className="material-symbols-outlined text-sm text-sky-600">description</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.15em] text-sky-600">Medical Records</span>
             </div>
-
-            <div className="hidden lg:flex items-center justify-center">
-              <div className="relative w-[320px] h-[320px]">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-cyan-300/20 to-sky-300/10 blur-3xl" />
-                <div className="absolute top-4 right-2 bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 shadow-lg">
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-white/70 font-semibold">Records Synced</p>
-                  <p className="text-white text-lg font-bold mt-1">24 Files</p>
-                </div>
-                <div className="absolute bottom-6 left-0 bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 shadow-lg">
-                  <p className="text-[10px] uppercase tracking-[0.12em] text-white/70 font-semibold">Clinical Index</p>
-                  <p className="text-white text-lg font-bold mt-1">A+</p>
-                </div>
-                <div className="absolute top-10 left-10 h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-300/35 to-sky-300/20 border border-cyan-100/30 flex items-center justify-center text-white shadow-lg">
-                  <span className="material-symbols-outlined text-[28px]">description</span>
-                </div>
-                <AIHealthcareIllustration className="absolute bottom-0 right-0 w-[280px] h-auto drop-shadow-[0_10px_35px_rgba(56,189,248,0.25)]" />
-              </div>
-            </div>
+            <h1 className="hero-title text-2xl md:text-3xl">Health Records</h1>
+            <p className="hero-subtitle mt-1 text-sm">Your medical information, conditions, medications, and clinical notes.</p>
           </div>
-        </section>
+          <button
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem("token");
+                const response = await API.get("/report/pdf", {
+                  responseType: "blob",
+                  headers: { Authorization: `Bearer ${token}` },
+                });
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute("download", `diashield_health_report_${new Date().toISOString().split("T")[0]}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+              } catch {
+                alert("Failed to generate PDF report.");
+              }
+            }}
+            className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold text-sm hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg shadow-sky-500/20"
+          >
+            <span className="material-symbols-outlined text-base">download</span>
+            Export PDF
+          </button>
+        </div>
 
-        <div className="mt-10 space-y-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {loading ? (
-              <div className="col-span-4 text-center py-8 text-slate-500 dark:text-slate-400">Loading health records...</div>
-            ) : error ? (
-              <div className="col-span-4 text-center py-8 text-red-600">{error}</div>
-            ) : !latestRecord ? (
-              <div className="col-span-4 text-center py-12">
-                <EmptyHealthRecords className="w-36 h-28 mx-auto mb-4 opacity-60" />
-                <p className="text-slate-500 dark:text-slate-400 font-medium">No health records found</p>
-                <p className="text-slate-400/60 dark:text-slate-500 text-sm mt-1">Add your first health record to start tracking.</p>
+        {/* Patient Information Card */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-[#0F172A]/90 border border-sky-100 dark:border-sky-900/30 shadow-lg shadow-blue-200/30">
+          <div className="absolute -top-16 -right-16 w-40 h-40 bg-gradient-to-br from-sky-200/30 to-cyan-200/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-16 w-40 h-40 bg-gradient-to-tr from-cyan-200/20 to-sky-200/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="relative z-10 p-6">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+                <span className="material-symbols-outlined text-white text-2xl">person</span>
               </div>
-            ) : (
-              <>
-                <MetricCard title="Fasting Blood Glucose" value={latestRecord.blood_sugar ? `${latestRecord.blood_sugar} mg/dL` : '--'} status={latestRecord.blood_sugar_status || '--'} date={latestRecord.recorded_at} border="border-sky-200" />
-                <MetricCard title="Blood Pressure" value={latestRecord.blood_pressure ? `${latestRecord.blood_pressure} mmHg` : '--'} status={latestRecord.blood_pressure_status || '--'} date={latestRecord.recorded_at} border="border-cyan-200" />
-                <MetricCard title="Body Mass Index (BMI)" value={latestRecord.bmi ? `${latestRecord.bmi} kg/m²` : '--'} status={latestRecord.bmi_status || '--'} date={latestRecord.recorded_at} border="border-sky-100" />
-                <MetricCard title="Weight" value={latestRecord.weight ? `${latestRecord.weight} kg` : '--'} status={latestRecord.weight_status || '--'} date={latestRecord.recorded_at} border="border-green-200" />
-              </>
-            )}
-          </div>
-
-          <div className="bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-[20px] p-6 shadow-lg shadow-blue-200/30">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="font-headline-md text-[18px] card-title font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-sky-600">water_drop</span>
-                Recent Blood Glucose Tracking Log
-              </h3>
-              <button onClick={() => { setEditRecord(null); setModalOpen(true) }} className="px-4 py-2 bg-white dark:bg-[#0F172A]/90 border border-sky-100 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-slate-700 dark:text-slate-300 rounded-lg font-label-md text-[13px] transition-colors flex items-center gap-1">
-                <span className="material-symbols-outlined text-[16px]">add</span> Add Reading
-              </button>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-sky-100 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                    <th className="pb-3">Log Date</th>
-                    <th className="pb-3">Measurement Window</th>
-                    <th className="pb-3">Clinical Value</th>
-                    <th className="pb-3 hidden md:table-cell">Clinician Annotations</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-sky-100 text-[14px]">
-                  {loading ? (
-                    <tr><td colSpan={4} className="text-center py-6 text-slate-500 dark:text-slate-400">Loading health records...</td></tr>
-                  ) : error ? (
-                    <tr><td colSpan={4} className="text-center py-6 text-red-600">{error}</td></tr>
-                  ) : records.length === 0 ? (
-                    <tr><td colSpan={4} className="text-center py-12"><EmptyHealthRecords className="w-28 h-24 mx-auto mb-3 opacity-60" /><p className="text-slate-500 dark:text-slate-400">No health records found</p></td></tr>
-                  ) : (
-                    sortedRecords.map((rec, i) => (
-                      <tr key={rec.id || i} className="hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors group">
-                        <td className="py-4 text-slate-900 dark:text-slate-100 font-medium">{rec.recorded_at ? new Date(rec.recorded_at).toLocaleDateString() : '--'}</td>
-                        <td className="py-4 text-slate-500 dark:text-slate-400">{rec.glucose_period ?? 'Not Specified'}</td>
-                        <td className="py-4"><span className={`font-semibold ${rec.blood_sugar && rec.blood_sugar > 140 ? 'text-cyan-500' : 'text-sky-600'}`}>{rec.blood_sugar ? `${rec.blood_sugar} mg/dL` : '--'}</span></td>
-                        <td className="py-4 text-slate-500 dark:text-slate-400 hidden md:table-cell">
-                          {rec.notes || '--'}
-                          <div className="flex gap-2 mt-2 opacity-80 group-hover:opacity-100">
-                            <button title="Edit" className="p-1 rounded hover:bg-sky-50 text-sky-600" onClick={() => { setEditRecord(rec); setModalOpen(true) }}><span className="material-symbols-outlined text-[18px]">edit</span></button>
-                            <button
-                              title="Delete"
-                              className="p-1 rounded hover:bg-red-50 text-red-600"
-                              disabled={deleteLoadingId === rec.id}
-                              onClick={async () => {
-                                if (!window.confirm('Delete this health record?')) return
-                                setDeleteLoadingId(rec.id)
-                                try {
-                                  await API.delete(`/health-record/delete/${rec.id}`)
-                                  setRecords((prev) => prev.filter((r) => r.id !== rec.id))
-                                  setToast('Health record deleted.')
-                                  fetchRecords()
-                                  setTimeout(() => setToast(''), 2000)
-                                } catch {
-                                  setToast('Failed to delete record.')
-                                } finally {
-                                  setDeleteLoadingId(null)
-                                }
-                              }}
-                            >
-                              {deleteLoadingId === rec.id ? <span className="material-symbols-outlined animate-spin text-[18px]">autorenew</span> : <span className="material-symbols-outlined text-[18px]">delete</span>}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{name || "Patient"}</h2>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-sm text-slate-500 dark:text-slate-400">
+                  {age && <span>{age} years</span>}
+                  {gender && <span>{gender}</span>}
+                  {blood_group && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-semibold border border-red-200 dark:border-red-800/30">
+                      <span className="material-symbols-outlined text-sm">bloodtype</span>
+                      {blood_group}
+                    </span>
                   )}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-10 bg-white dark:bg-[#0F172A]/90 border border-sky-100 rounded-[20px] p-6 shadow-lg shadow-blue-200/30">
-            <h3 className="font-headline-md text-[18px] card-title font-semibold mb-6 flex items-center gap-2"><span className="material-symbols-outlined text-cyan-500">medication</span>Pharmacological Medications Management</h3>
-            {medicationsLoading ? (
-              <div className="text-center py-8 text-slate-500 dark:text-slate-400">Loading medications...</div>
-            ) : medicationsError ? (
-              <div className="text-center py-8 text-red-600">{medicationsError}</div>
-            ) : medications.length === 0 ? (
-              <div className="text-center py-12">
-                <EmptyHealthRecords className="w-28 h-24 mx-auto mb-3 opacity-60" />
-                <p className="text-slate-500 dark:text-slate-400">No active medications found</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {medications.map((med, i) => (
-                  <div key={med.id || i} className="border border-sky-100 bg-[#F0F9FF] dark:bg-cyan-900/20 p-4 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <span className="font-headline-md card-title text-[16px] font-bold">{med.medicines}</span>
-                        <span className="font-label-md text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">Active</span>
-                      </div>
-                      <p className="font-body-sm text-slate-500 dark:text-slate-400 text-[13px] mb-1">Dosage: <span className="text-slate-900 dark:text-slate-100 font-medium">{med.dosage}</span></p>
-                      <p className="font-body-sm text-slate-500 dark:text-slate-400 text-[13px]">{med.frequency ? `${med.frequency} • ` : ''}Duration: {med.duration}</p>
-                      {med.instructions && <p className="font-body-sm text-slate-500 dark:text-slate-400 text-[13px] mt-2">Instructions: {med.instructions}</p>}
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="block font-label-md text-slate-500 dark:text-slate-400 text-[10px] uppercase">Created</span>
-                      <span className="font-label-md text-slate-900 dark:text-slate-100 text-[13px]">{new Date(med.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-5 pt-5 border-t border-sky-100 dark:border-sky-900/30">
+              <InfoItem icon="straighten" label="Height" value={height ? `${height} cm` : "—"} />
+              <InfoItem icon="fitness_center" label="Weight" value={latestWeight ? `${latestWeight} kg` : "—"} />
+              <InfoItem icon="monitoring" label="BMI" value={bmi ? `${bmi} kg/m²` : "—"} />
+              <InfoItem icon="description" label="Records" value={records.length + doctorNotes.length + medications.length} />
+            </div>
           </div>
         </div>
 
-        <AddReadingModal
-          open={modalOpen}
-          onClose={() => { setModalOpen(false); setEditRecord(null) }}
-          onSuccess={() => {
-            setToast(editRecord ? 'Health record updated successfully.' : 'Health record added successfully.')
-            fetchRecords()
-            setTimeout(() => setToast(''), 2000)
-          }}
-          editRecord={editRecord}
-        />
+        {/* Current Conditions */}
+        <SectionCard title="Current Conditions" icon="monitor_heart" iconColor="text-amber-500">
+          {activeConditions.length === 0 ? (
+            <p className="text-sm text-slate-400">No active conditions recorded.</p>
+          ) : (
+            <div className="space-y-2">
+              {activeConditions.map((c, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-amber-50/50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/20">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200 flex-1">{c}</span>
+                  <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2.5 py-0.5 rounded-full">Active</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
 
-        {toast && (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg font-label-md animate-fade-in">
-            {toast}
-          </div>
-        )}
+        {/* Active Medications */}
+        <SectionCard title="Active Medications" icon="medication" iconColor="text-violet-500">
+          {medications.length === 0 ? (
+            <p className="text-sm text-slate-400">No active medications. Prescriptions will appear here once issued.</p>
+          ) : (
+            <div className="space-y-3">
+              {medications.map((med, i) => (
+                <div key={med.id || i} className="p-4 rounded-xl bg-violet-50/50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-800/20">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div>
+                      <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{med.medicines || "Medication"}</span>
+                      {med.dosage && <span className="text-sm text-slate-500 ml-2">{med.dosage}</span>}
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 shrink-0">Active</span>
+                  </div>
+                  <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500">
+                    {med.frequency && <span>Frequency: <strong className="text-slate-700 dark:text-slate-300">{med.frequency}</strong></span>}
+                    {med.doctor_name && <span>Prescribed by: <strong className="text-slate-700 dark:text-slate-300">{med.doctor_name}</strong></span>}
+                    {med.created_at && <span>Started: <strong className="text-slate-700 dark:text-slate-300">{new Date(med.created_at).toLocaleDateString()}</strong></span>}
+                  </div>
+                  {med.instructions && <p className="text-xs text-slate-400 mt-2 italic">{med.instructions}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
+
+        {/* Doctor Notes */}
+        <SectionCard title="Doctor's Notes" icon="clinical_notes" iconColor="text-teal-500">
+          {doctorNotes.length === 0 ? (
+            <p className="text-sm text-slate-400">No clinical notes yet. Notes from completed appointments will appear here.</p>
+          ) : (
+            <div className="space-y-3">
+              {doctorNotes.slice(0, 5).map(n => (
+                <div key={n.id} className="p-4 rounded-xl bg-teal-50/50 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-800/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-base text-slate-400">stethoscope</span>
+                      {n.doctor}
+                    </span>
+                    <span className="text-xs text-slate-400">{new Date(n.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed space-y-2">
+                    {n.note?.diagnosis && (
+                      <div className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-base text-amber-500 mt-0.5">monitor_heart</span>
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Diagnosis</span>
+                          <p className="text-slate-800 dark:text-slate-200 font-medium">{n.note.diagnosis}</p>
+                        </div>
+                      </div>
+                    )}
+                    {n.note?.notes && (
+                      <div className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-base text-teal-500 mt-0.5">clinical_notes</span>
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Clinical Notes</span>
+                          <p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{n.note.notes}</p>
+                        </div>
+                      </div>
+                    )}
+                    {n.note?.advice && (
+                      <div className="flex items-start gap-2">
+                        <span className="material-symbols-outlined text-base text-sky-500 mt-0.5">lightbulb</span>
+                        <div>
+                          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Recommendations</span>
+                          <p className="text-slate-600 dark:text-slate-400 whitespace-pre-wrap">{n.note.advice}</p>
+                        </div>
+                      </div>
+                    )}
+                    {(!n.note?.diagnosis && !n.note?.notes && !n.note?.advice) && (
+                      <p className="text-slate-400 italic">No clinical details available</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </SectionCard>
+
       </div>
     </div>
-  )
+  );
+}
+
+function InfoItem({ icon, label, value }) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-xl bg-sky-50 dark:bg-sky-900/20 flex items-center justify-center shrink-0">
+        <span className="material-symbols-outlined text-base text-sky-600 dark:text-sky-400">{icon}</span>
+      </div>
+      <div>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wider">{label}</p>
+        <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{value}</p>
+      </div>
+    </div>
+  );
 }

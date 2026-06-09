@@ -29,6 +29,7 @@ import models.patient_model
 import models.medical_history_model
 import models.health_record_model
 import models.prediction_history_model
+import models.settings_model
 
 
 # ==========================================
@@ -225,6 +226,14 @@ app.include_router(
 # Register analytics routes
 from routes.analytics_routes import router as analytics_router
 app.include_router(analytics_router)
+
+# Register settings routes
+from routes.settings_routes import router as settings_router
+app.include_router(settings_router)
+
+# Register doctor patient access routes
+from routes.doctor_patient_routes import router as doctor_patient_router
+app.include_router(doctor_patient_router)
 
 
 # ==========================================

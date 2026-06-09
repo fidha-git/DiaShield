@@ -1,9 +1,44 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import API from "../services/api";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import DoctorAvatar from "../components/DoctorAvatar";
 import { EmptyAppointments } from "../components/Illustrations";
+import { formatINR } from "../utils/currency";
+
+function toLocalDateString(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+const STEPS = [
+  { num: 1, label: "Specialization" },
+  { num: 2, label: "Choose Doctor" },
+  { num: 3, label: "Date & Time" },
+  { num: 4, label: "Review" },
+];
+
+const SPECIALIZATION_ICONS = {
+  "Diabetologist": "monitor_heart",
+  "Endocrinologist": "biotech",
+  "Nutritionist": "restaurant",
+  "General Physician": "stethoscope",
+  "Cardiologist": "favorite",
+  "Neurologist": "psychology",
+  "Dermatologist": "skin",
+  "Pediatrician": "child_care",
+  "Psychiatrist": "mood",
+  "Ophthalmologist": "visibility",
+};
+
+const SPECIALIZATION_COLORS = {
+  "Diabetologist": "from-rose-500 to-pink-500",
+  "Endocrinologist": "from-cyan-500 to-sky-500",
+  "Nutritionist": "from-emerald-500 to-green-500",
+  "General Physician": "from-sky-500 to-blue-500",
+};
 
 export default function Appointments() {
   const [appointments, setAppointments] = useState([]);
@@ -13,12 +48,16 @@ export default function Appointments() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [doctors, setDoctors] = useState([]);
+  const [step, setStep] = useState(1);
+  const [selectedSpecialization, setSelectedSpecialization] = useState(null);
   const [selectedDoctorId, setSelectedDoctorId] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [selectedDate, setSelectedDate] = useState();
   const [slots, setSlots] = useState([]);
   const [calendarMonth, setCalendarMonth] = useState(() => new Date());
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const carouselRef = useRef(null);
 
   const filteredAppointments = useMemo(() => {
     if (!Array.isArray(appointments)) return [];
@@ -51,6 +90,31 @@ export default function Appointments() {
     };
   }, [appointments]);
 
+  const specializations = useMemo(() => {
+    const map = new Map();
+    doctors.forEach(d => {
+      const s = d.specialization || "General Physician";
+      map.set(s, (map.get(s) || 0) + 1);
+    });
+    return Array.from(map.entries()).map(([name, count]) => ({ name, count }));
+  }, [doctors]);
+
+  const filteredDoctors = useMemo(() => {
+    let result = doctors;
+    if (selectedSpecialization) {
+      result = result.filter(d => d.specialization === selectedSpecialization);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(d =>
+        d.name?.toLowerCase().includes(q) ||
+        d.specialization?.toLowerCase().includes(q) ||
+        d.hospital?.toLowerCase().includes(q)
+      );
+    }
+    return result;
+  }, [doctors, selectedSpecialization, searchQuery]);
+
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -62,9 +126,6 @@ export default function Appointments() {
       try {
         const response = await API.get("/doctor/all", { headers: getAuthHeaders() });
         setDoctors(Array.isArray(response.data) ? response.data : []);
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setSelectedDoctorId(response.data[0].id);
-        }
       } catch (error) {
         setDoctors([]);
         const errorMessage =
@@ -73,17 +134,14 @@ export default function Appointments() {
           error.message ||
           "Something went wrong";
         setError(String(errorMessage));
-        console.error("Doctor fetch failed:", error);
       }
     };
-    const fetchAppointments = async () => {
-      await loadAppointments();
-    };
     fetchDoctors();
-    fetchAppointments();
+    loadAppointments();
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     const fetchSlots = async () => {
       setError("");
       setSelectedDate(undefined);
@@ -102,29 +160,22 @@ export default function Appointments() {
         }
         const response = await API.get(`/doctor/slots/${selectedDoctorId}`, { headers: getAuthHeaders() });
         const loadedSlots = Array.isArray(response.data) ? response.data : [];
+        if (cancelled) return;
         setSlots(loadedSlots);
         if (loadedSlots.length > 0) {
           const availableDates = loadedSlots.filter(s => !s.is_booked).map(s => s.date).sort();
           if (availableDates.length > 0) {
             setCalendarMonth(new Date(availableDates[0]));
-          } else {
-            setCalendarMonth(new Date());
           }
-        } else {
-          setCalendarMonth(new Date());
         }
       } catch (error) {
+        if (cancelled) return;
         setSlots([]);
         setCalendarMonth(new Date());
-        const errorMessage =
-          error?.response?.data?.detail?.[0]?.msg ||
-          error?.response?.data?.detail ||
-          error.message ||
-          "Something went wrong";
-        setError(String(errorMessage));
       }
     };
     fetchSlots();
+    return () => { cancelled = true; };
   }, [selectedDoctorId]);
 
   const loadAppointments = async () => {
@@ -138,10 +189,7 @@ export default function Appointments() {
         setLoading(false);
         return;
       }
-      const response = await API.get(
-        "/appointments/my-appointments",
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const response = await API.get("/appointments/my-appointments", { headers: { Authorization: `Bearer ${token}` } });
       let appts = [];
       if (Array.isArray(response.data)) {
         appts = response.data;
@@ -163,8 +211,7 @@ export default function Appointments() {
     }
   };
 
-  const handleBook = async (e) => {
-    e.preventDefault();
+  const handleBook = async () => {
     setError("");
     setSuccess("");
     setBooking(true);
@@ -180,17 +227,17 @@ export default function Appointments() {
         setBooking(false);
         return;
       }
-      const selectedSlotId = selectedSlot.id;
       const bookingPayload = {
         doctor_id: Number(selectedDoctorId),
-        slot_id: Number(selectedSlotId)
+        slot_id: Number(selectedSlot.id)
       };
-      await API.post(
-        `/appointments/book/${selectedSlotId}`,
-        bookingPayload,
-        { headers: getAuthHeaders() }
-      );
+      await API.post(`/appointments/book/${selectedSlot.id}`, bookingPayload, { headers: getAuthHeaders() });
       setSuccess("Appointment booked successfully.");
+      setStep(1);
+      setSelectedSpecialization(null);
+      setSelectedDoctorId(null);
+      setSelectedDate(undefined);
+      setSelectedSlot(null);
       await loadAppointments();
     } catch (error) {
       const errorMessage =
@@ -211,19 +258,12 @@ export default function Appointments() {
     setAppointments(prev => prev.filter(a => a.id !== id));
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        setError("You are not logged in.");
-        return;
-      }
+      if (!token) { setError("You are not logged in."); return; }
       await API.delete(`/appointments/cancel/${id}`, { headers: getAuthHeaders() });
       setSuccess("Appointment cancelled.");
       await loadAppointments();
     } catch (error) {
-      const errorMessage =
-        error?.response?.data?.detail?.[0]?.msg ||
-        error?.response?.data?.detail ||
-        error.message ||
-        "Something went wrong";
+      const errorMessage = error?.response?.data?.detail || error.message || "Something went wrong";
       setError(String(errorMessage));
       await loadAppointments();
     }
@@ -243,15 +283,28 @@ export default function Appointments() {
   };
 
   const timeSlots = selectedDate
-    ? slots.filter(s => !s.is_booked && s.date === selectedDate.toISOString().slice(0, 10))
+    ? (() => {
+        const dateStr = toLocalDateString(selectedDate);
+        return slots.filter(s => !s.is_booked && s.date === dateStr);
+      })()
     : [];
+
+  const selectedDoctor = doctors.find(d => d.id === selectedDoctorId);
+  const totalSteps = STEPS.length;
+
+  const scrollCarousel = (direction) => {
+    if (carouselRef.current) {
+      const scrollAmount = carouselRef.current.clientWidth * 0.6;
+      carouselRef.current.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="space-y-6 transition-colors duration-300">
       <div className="page-container animate-fade-in">
 
         {/* Header */}
-        <header className="mb-12">
+        <header className="mb-8">
           <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-sky-500/10 to-cyan-500/10 dark:from-sky-500/20 dark:to-cyan-500/20 border border-sky-200 dark:border-slate-800/80 text-sky-700 dark:text-sky-400 text-[10px] font-bold uppercase tracking-widest mb-4 shadow-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
             Patient Portal
@@ -263,7 +316,7 @@ export default function Appointments() {
         </header>
 
         {/* Error/Success toasts */}
-        <div className="fixed top-6 right-6 z-50 flex flex-col gap-3">
+        <div className="fixed top-6 right-4 sm:right-6 z-50 flex flex-col gap-3 max-w-[90vw]">
           {error && (
             <div className="flex items-center gap-3 px-5 py-3 rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 text-red-650 dark:text-red-400 shadow-2xl animate-slide-down">
               <span className="material-symbols-outlined text-lg">error</span>
@@ -287,180 +340,496 @@ export default function Appointments() {
         {/* 2-column layout */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
 
-          {/* ─── LEFT COLUMN: Booking ─── */}
-          <div className="lg:col-span-2 space-y-10">
+          {/* ─── LEFT COLUMN: Booking Wizard ─── */}
+          <div className="lg:col-span-2 space-y-6">
 
-            {/* Doctor Selection */}
-            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none transition-colors duration-300">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
-                <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-sm text-white">stethoscope</span>
-                </span>
-                Choose Your Doctor
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {doctors.map(doctor => {
-                  const isSelected = selectedDoctorId === doctor.id;
-                  return (
-                    <button
-                      type="button"
-                      key={doctor.id}
-                      onClick={() => {
-                        setSelectedDoctorId(doctor.id);
-                        setSelectedDate(undefined);
-                        setSelectedSlot(null);
-                      }}
-                      className={`relative group text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
-                        isSelected
-                          ? "border-sky-300 dark:border-sky-500/80 bg-sky-50/60 dark:bg-slate-800/60 shadow-lg shadow-sky-500/5 scale-[1.02]"
-                          : "border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-sky-50/50 dark:hover:bg-slate-850 hover:border-sky-200 dark:hover:border-slate-700 hover:scale-[1.02]"
-                      }`}
-                    >
-                      {isSelected && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-sky-500 flex items-center justify-center shadow-lg shadow-sky-500/40 z-10 animate-scale-in">
-                          <span className="material-symbols-outlined text-[12px] text-white">check</span>
-                        </div>
-                      )}
-                      <DoctorAvatar profile_image={doctor.profile_image} doctor_name={doctor.name} size={56} />
-                      <div className="mt-3">
-                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{doctor.name}</p>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5 truncate">{doctor.specialization}</p>
-                        {doctor.experience != null && (
-                          <p className="text-[11px] text-sky-650 dark:text-sky-400 mt-1 font-bold">{doctor.experience} Years Exp.</p>
+            {/* Progress Indicator */}
+            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-xl shadow-slate-100/50 dark:shadow-none">
+              <div className="flex items-center justify-between">
+                {STEPS.map((s, i) => (
+                  <React.Fragment key={s.num}>
+                    <div className="flex flex-col items-center gap-1.5">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                        step === s.num
+                          ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/30 scale-110"
+                          : step > s.num
+                            ? "bg-emerald-500 text-white"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500"
+                      }`}>
+                        {step > s.num ? (
+                          <span className="material-symbols-outlined text-sm">check</span>
+                        ) : (
+                          s.num
                         )}
                       </div>
-                    </button>
-                  );
-                })}
+                      <span className={`text-[10px] font-semibold uppercase tracking-wider ${
+                        step === s.num
+                          ? "text-sky-600 dark:text-sky-400"
+                          : step > s.num
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-slate-400 dark:text-slate-500"
+                      }`}>
+                        {s.label}
+                      </span>
+                    </div>
+                    {i < totalSteps - 1 && (
+                      <div className={`flex-1 h-0.5 mx-2 rounded-full transition-all duration-500 ${
+                        step > s.num ? "bg-emerald-400" : "bg-slate-200 dark:bg-slate-700"
+                      }`} />
+                    )}
+                  </React.Fragment>
+                ))}
               </div>
             </div>
 
-            {/* Calendar */}
-            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none transition-colors duration-300">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
-                <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-sky-500 flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-sm text-white">calendar_month</span>
-                </span>
-                Select Date
-              </h3>
-              <style>{`
-                .rdp {
-                  --rdp-cell-size: 44px;
-                  --rdp-accent-color: #0EA5E9;
-                  --rdp-background-color: rgba(14,165,233,0.15);
-                  --rdp-accent-color-dark: #0EA5E9;
-                  --rdp-background-color-dark: rgba(14,165,233,0.15);
-                  --rdp-outline: 2px solid rgba(14,165,233,0.5);
-                  --rdp-outline-selected: 2px solid rgba(14,165,233,0.5);
-                  margin: 0;
-                }
-                .rdp-months { justify-content: center; }
-                .rdp-month { width: 100%; }
-                .rdp-table { width: 100%; }
-                .rdp-head_cell {
-                  color: #64748B;
-                  font-weight: 700;
-                  font-size: 11px;
-                  text-transform: uppercase;
-                  padding-bottom: 8px;
-                }
-                html.dark .rdp-head_cell { color: #94A3B8; }
-                .rdp-cell { text-align: center; }
-                .rdp-button_reset { border-radius: 12px !important; font-weight: 550; }
-                .rdp-day { font-size: 14px; color: #64748B; border-radius: 12px !important; transition: all 0.2s; }
-                html.dark .rdp-day { color: #CBD5E1; }
-                .rdp-day:hover:not(.rdp-day_disabled) { background: rgba(14,165,233,0.15) !important; transform: scale(1.05); }
-                .rdp-day_selected { background: #0EA5E9 !important; color: white !important; font-weight: 700; box-shadow: 0 4px 12px rgba(14,165,233,0.4); }
-                .rdp-day_selected:hover { background: #0284C7 !important; }
-                .rdp-day_disabled { color: #CBD5E1 !important; cursor: not-allowed; opacity: 0.3; }
-                html.dark .rdp-day_disabled { color: #475569 !important; }
-                .rdp-day_today { font-weight: 700; color: #0EA5E9; }
-                .rdp-nav_button { border-radius: 10px !important; padding: 4px; color: #94A3B8; }
-                .rdp-nav_button:hover { background: #F1F5F9 !important; }
-                html.dark .rdp-nav_button:hover { background: #1E293B !important; }
-                .rdp-caption { padding: 0 0 12px 0; }
-                .rdp-caption_label { font-size: 16px; font-weight: 700; color: #334155; }
-                html.dark .rdp-caption_label { color: #F1F5F9; }
-                .rdp-vhidden { display: none; }
-                .rdp-day_available { background: rgba(14,165,233,0.08); color: #0EA5E9; font-weight: 600; }
-                html.dark .rdp-day_available { background: rgba(14,165,233,0.15); color: #38BDF8; }
-              `}</style>
-              <DayPicker
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                month={calendarMonth}
-                onMonthChange={setCalendarMonth}
-                disabled={date => {
-                  const availableDates = slots.filter(s => !s.is_booked).map(s => s.date);
-                  return !availableDates.includes(date?.toISOString().slice(0, 10));
-                }}
-                modifiers={{
-                  available: date => {
-                    const availableDates = slots.filter(s => !s.is_booked).map(s => s.date);
-                    return availableDates.includes(date?.toISOString().slice(0, 10));
-                  }
-                }}
-                modifiersClassNames={{
-                  available: "rdp-day_available"
-                }}
-              />
-            </div>
-
-            {/* Time Slots + Book Button */}
-            <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none transition-colors duration-300">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-3">
-                <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-cyan-500 flex items-center justify-center shadow-md">
-                  <span className="material-symbols-outlined text-sm text-white">schedule</span>
-                </span>
-                {selectedDate ? "Available Slots" : "Select a date to see slots"}
-              </h3>
-              {selectedDate && (
-                <>
-                  {timeSlots.length === 0 ? (
-                    <div className="text-center py-8 text-slate-500 dark:text-slate-500 animate-fade-in">
-                      <span className="material-symbols-outlined text-3xl block mb-2">event_busy</span>
-                      <p className="text-sm">No slots available for this date</p>
-                    </div>
-                  ) : (
-                    <div className="flex flex-wrap gap-3 mb-6 animate-fade-in">
-                      {timeSlots.map(slot => (
+            {/* Step 1: Select Specialization */}
+            {step === 1 && (
+              <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none animate-fade-in">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-md">
+                    <span className="material-symbols-outlined text-sm text-white">category</span>
+                  </span>
+                  Select Specialization
+                </h3>
+                {specializations.length === 0 ? (
+                  <div className="text-center py-8 text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-3xl block mb-2">medical_services</span>
+                    <p className="text-sm font-medium">No doctors available</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {specializations.map((spec) => {
+                      const isSelected = selectedSpecialization === spec.name;
+                      const icon = SPECIALIZATION_ICONS[spec.name] || "medical_services";
+                      const gradient = SPECIALIZATION_COLORS[spec.name] || "from-sky-500 to-cyan-500";
+                      return (
                         <button
-                          type="button"
-                          key={slot.id}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`px-5 py-3 rounded-xl border font-bold text-sm transition-all duration-200 cursor-pointer ${
-                            selectedSlot && selectedSlot.id === slot.id
-                              ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 shadow-lg shadow-cyan-500/10 scale-105"
-                              : "border-slate-200/60 dark:border-slate-800 bg-[#F0F9FF] dark:bg-slate-900 text-slate-550 dark:text-slate-400 hover:border-sky-200 dark:hover:border-slate-700 hover:bg-sky-100 dark:hover:bg-slate-800"
+                          key={spec.name}
+                          onClick={() => {
+                            setSelectedSpecialization(spec.name);
+                            setSelectedDoctorId(null);
+                            setStep(2);
+                          }}
+                          className={`relative group text-left p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${
+                            isSelected
+                              ? "border-sky-300 dark:border-sky-500/80 bg-sky-50/60 dark:bg-slate-800/60 shadow-lg shadow-sky-500/5 scale-[1.02]"
+                              : "border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-sky-50/50 dark:hover:bg-slate-850 hover:border-sky-200 dark:hover:border-slate-700 hover:scale-[1.02]"
                           }`}
                         >
-                          {slot.start_time?.slice(0, 5)}
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg mb-3`}>
+                            <span className="material-symbols-outlined text-white text-lg">{icon}</span>
+                          </div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{spec.name}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{spec.count} doctor{spec.count > 1 ? 's' : ''}</p>
                         </button>
-                      ))}
+                      );
+                    })}
+                  </div>
+                )}
+                {selectedSpecialization && (
+                  <button
+                    onClick={() => setStep(2)}
+                    className="w-full mt-4 px-4 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold text-sm hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg shadow-sky-500/20 cursor-pointer"
+                  >
+                    <span className="material-symbols-outlined text-base align-middle mr-1">arrow_forward</span>
+                    Continue to Choose Doctor
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Step 2: Choose Doctor (Carousel) */}
+            {step === 2 && (
+              <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none animate-fade-in">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-sky-500 flex items-center justify-center shadow-md">
+                      <span className="material-symbols-outlined text-sm text-white">stethoscope</span>
+                    </span>
+                    Choose Doctor
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setStep(1)}
+                      className="text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 flex items-center gap-1 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-sm">arrow_back</span>
+                      Change
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search */}
+                <div className="relative mb-4">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-lg">search</span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by doctor, specialization, or hospital..."
+                    className="w-full pl-9 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 bg-white dark:bg-slate-800/80 text-slate-900 dark:text-slate-100"
+                  />
+                </div>
+
+                {/* Specialization filter chips */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {specializations.map(spec => (
+                    <button
+                      key={spec.name}
+                      onClick={() => setSelectedSpecialization(spec.name)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                        selectedSpecialization === spec.name
+                          ? "bg-sky-500 text-white shadow-sm"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-sky-50 dark:hover:bg-slate-700"
+                      }`}
+                    >
+                      {spec.name}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Carousel */}
+                {filteredDoctors.length === 0 ? (
+                  <div className="text-center py-10 text-slate-400 dark:text-slate-500">
+                    <span className="material-symbols-outlined text-3xl block mb-2">search_off</span>
+                    <p className="text-sm font-medium">
+                      {searchQuery ? "No doctors match your search" : "No doctors available for this specialization"}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <div
+                      ref={carouselRef}
+                      className="flex gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 hide-scrollbar"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                      {filteredDoctors.map((doctor) => {
+                        const isSelected = selectedDoctorId === doctor.id;
+                        return (
+                          <div
+                            key={doctor.id}
+                            className={`snap-start shrink-0 w-[220px] md:w-[200px] p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col items-center text-center ${
+                              isSelected
+                                ? "border-sky-300 dark:border-sky-500/80 bg-sky-50/60 dark:bg-slate-800/60 shadow-lg shadow-sky-500/10 scale-[1.02] ring-2 ring-sky-400/30"
+                                : "border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-sky-50/50 dark:hover:bg-slate-850 hover:border-sky-200 dark:hover:border-slate-700"
+                            }`}
+                          >
+                            {isSelected && (
+                              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-sky-500 flex items-center justify-center shadow-lg shadow-sky-500/40 z-10">
+                                <span className="material-symbols-outlined text-[14px] text-white">check</span>
+                              </div>
+                            )}
+                            <div className="relative">
+                              <DoctorAvatar profile_image={doctor.profile_image} doctor_name={doctor.name} size={72} />
+                              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 ${
+                                doctor.available_days ? "bg-green-500" : "bg-slate-400"
+                              }`} />
+                            </div>
+                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mt-3">{doctor.name}</p>
+                            <p className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold mt-0.5">{doctor.specialization}</p>
+                            <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <span className="material-symbols-outlined text-xs">calendar_today</span>
+                                {doctor.experience} yrs
+                              </span>
+                              {doctor.consultation_fee != null && (
+                                <span className="flex items-center gap-1">
+                                  <span className="material-symbols-outlined text-xs">payments</span>
+                                  {formatINR(doctor.consultation_fee)}
+                                </span>
+                              )}
+                            </div>
+                            {doctor.hospital && (
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2 truncate max-w-full">{doctor.hospital}</p>
+                            )}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedDoctorId(doctor.id);
+                                setSelectedDate(undefined);
+                                setSelectedSlot(null);
+                                setStep(3);
+                              }}
+                              className={`w-full mt-4 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? "bg-gradient-to-r from-sky-500 to-cyan-500 text-white shadow-lg shadow-sky-500/20"
+                                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-sky-100 dark:hover:bg-slate-700"
+                              }`}
+                            >
+                              {isSelected ? "Selected" : "Select Doctor"}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {filteredDoctors.length > 2 && (
+                      <>
+                        <button
+                          onClick={() => scrollCarousel(-1)}
+                          className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-sky-50 dark:hover:bg-slate-700 transition-all cursor-pointer z-10"
+                        >
+                          <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 text-lg">chevron_left</span>
+                        </button>
+                        <button
+                          onClick={() => scrollCarousel(1)}
+                          className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-lg flex items-center justify-center hover:bg-sky-50 dark:hover:bg-slate-700 transition-all cursor-pointer z-10"
+                        >
+                          <span className="material-symbols-outlined text-slate-600 dark:text-slate-300 text-lg">chevron_right</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Select Date & Time */}
+            {step === 3 && (
+              <div className="space-y-6 animate-fade-in">
+                {/* Selected doctor summary */}
+                {selectedDoctor && (
+                  <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-4 shadow-xl shadow-slate-100/50 dark:shadow-none">
+                    <div className="flex items-center gap-3">
+                      <DoctorAvatar profile_image={selectedDoctor.profile_image} doctor_name={selectedDoctor.name} size={48} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{selectedDoctor.name}</p>
+                        <p className="text-[11px] text-sky-600 dark:text-sky-400">{selectedDoctor.specialization}</p>
+                      </div>
+                      <button
+                        onClick={() => setStep(2)}
+                        className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 flex items-center gap-1 cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Calendar */}
+                <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-sky-500 flex items-center justify-center shadow-md">
+                      <span className="material-symbols-outlined text-sm text-white">calendar_month</span>
+                    </span>
+                    Select Date
+                  </h3>
+                  <style>{`
+                    .rdp {
+                      --rdp-cell-size: 44px;
+                      --rdp-accent-color: #0EA5E9;
+                      --rdp-background-color: rgba(14,165,233,0.15);
+                      --rdp-accent-color-dark: #0EA5E9;
+                      --rdp-background-color-dark: rgba(14,165,233,0.15);
+                      --rdp-outline: 2px solid rgba(14,165,233,0.5);
+                      --rdp-outline-selected: 2px solid rgba(14,165,233,0.5);
+                      @media (max-width: 480px) { --rdp-cell-size: 38px; }
+                      margin: 0;
+                    }
+                    .rdp-months { justify-content: center; }
+                    .rdp-month { width: 100%; }
+                    .rdp-table { width: 100%; }
+                    .rdp-head_cell {
+                      color: #64748B;
+                      font-weight: 700;
+                      font-size: 11px;
+                      text-transform: uppercase;
+                      padding-bottom: 8px;
+                    }
+                    html.dark .rdp-head_cell { color: #94A3B8; }
+                    .rdp-cell { text-align: center; }
+                    .rdp-button_reset { border-radius: 12px !important; font-weight: 550; }
+                    .rdp-day { font-size: 14px; color: #64748B; border-radius: 12px !important; transition: all 0.2s; }
+                    html.dark .rdp-day { color: #CBD5E1; }
+                    .rdp-day:hover:not(.rdp-day_disabled) { background: rgba(14,165,233,0.15) !important; transform: scale(1.05); }
+                    .rdp-day_selected { background: #0EA5E9 !important; color: white !important; font-weight: 700; box-shadow: 0 4px 12px rgba(14,165,233,0.4); }
+                    .rdp-day_selected:hover { background: #0284C7 !important; }
+                    .rdp-day_disabled { color: #CBD5E1 !important; cursor: not-allowed; opacity: 0.3; }
+                    html.dark .rdp-day_disabled { color: #475569 !important; }
+                    .rdp-day_today { font-weight: 700; color: #0EA5E9; }
+                    .rdp-nav_button { border-radius: 10px !important; padding: 4px; color: #94A3B8; }
+                    .rdp-nav_button:hover { background: #F1F5F9 !important; }
+                    html.dark .rdp-nav_button:hover { background: #1E293B !important; }
+                    .rdp-caption { padding: 0 0 12px 0; }
+                    .rdp-caption_label { font-size: 16px; font-weight: 700; color: #334155; }
+                    html.dark .rdp-caption_label { color: #F1F5F9; }
+                    .rdp-vhidden { display: none; }
+                    .rdp-day_available { background: rgba(14,165,233,0.08); color: #0EA5E9; font-weight: 600; }
+                    html.dark .rdp-day_available { background: rgba(14,165,233,0.15); color: #38BDF8; }
+                  `}</style>
+                  <DayPicker
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      setSelectedDate(date);
+                      setSelectedSlot(null);
+                    }}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    disabled={date => {
+                      const availableDates = slots.filter(s => !s.is_booked).map(s => s.date);
+                      return !(date && availableDates.includes(toLocalDateString(date)));
+                    }}
+                    modifiers={{
+                      available: date => {
+                        const availableDates = slots.filter(s => !s.is_booked).map(s => s.date);
+                        return !!(date && availableDates.includes(toLocalDateString(date)));
+                      }
+                    }}
+                    modifiersClassNames={{
+                      available: "rdp-day_available"
+                    }}
+                  />
+                </div>
+
+                {/* Time Slots */}
+                <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none">
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-3">
+                    <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-500 to-cyan-500 flex items-center justify-center shadow-md">
+                      <span className="material-symbols-outlined text-sm text-white">schedule</span>
+                    </span>
+                    {selectedDate ? "Available Slots" : "Select a date to see slots"}
+                  </h3>
+                  {selectedDate && (
+                    <>
+                      {timeSlots.length === 0 ? (
+                        <div className="text-center py-8 text-slate-500 dark:text-slate-500 animate-fade-in">
+                          <span className="material-symbols-outlined text-3xl block mb-2">event_busy</span>
+                          <p className="text-sm">No slots available for this date</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-3 mb-6 animate-fade-in">
+                          {timeSlots.map(slot => (
+                            <button
+                              type="button"
+                              key={slot.id}
+                              onClick={() => setSelectedSlot(slot)}
+                              className={`px-5 py-3 rounded-xl border font-bold text-sm transition-all duration-200 cursor-pointer ${
+                                selectedSlot && selectedSlot.id === slot.id
+                                  ? "border-cyan-400 bg-cyan-50 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 shadow-lg shadow-cyan-500/10 scale-105"
+                                  : "border-slate-200/60 dark:border-slate-800 bg-[#F0F9FF] dark:bg-slate-900 text-slate-550 dark:text-slate-400 hover:border-sky-200 dark:hover:border-slate-700 hover:bg-sky-100 dark:hover:bg-slate-800"
+                              }`}
+                            >
+                              {slot.start_time?.slice(0, 5)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {selectedSlot && (
+                    <button
+                      onClick={() => setStep(4)}
+                      className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-bold text-sm hover:from-sky-600 hover:to-cyan-600 transition-all shadow-lg shadow-sky-500/20 cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-base align-middle mr-1">arrow_forward</span>
+                      Continue to Review
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Review & Confirm */}
+            {step === 4 && (
+              <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-6 md:p-8 shadow-xl shadow-slate-100/50 dark:shadow-none animate-fade-in">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 flex items-center gap-3">
+                  <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center shadow-md">
+                    <span className="material-symbols-outlined text-sm text-white">assignment</span>
+                  </span>
+                  Review & Confirm
+                </h3>
+
+                <div className="space-y-4 mb-6">
+                  <div className="p-4 rounded-2xl bg-sky-50/50 dark:bg-slate-800/40 border border-sky-100 dark:border-slate-700/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Specialization</span>
+                      <button onClick={() => setStep(1)} className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 flex items-center gap-1 cursor-pointer">
+                        <span className="material-symbols-outlined text-sm">edit</span>Change
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center">
+                        <span className="material-symbols-outlined text-sm text-white">
+                          {SPECIALIZATION_ICONS[selectedSpecialization] || "medical_services"}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{selectedSpecialization}</span>
+                    </div>
+                  </div>
+
+                  {selectedDoctor && (
+                    <div className="p-4 rounded-2xl bg-cyan-50/50 dark:bg-slate-800/40 border border-cyan-100 dark:border-slate-700/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Doctor</span>
+                        <button onClick={() => setStep(2)} className="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 flex items-center gap-1 cursor-pointer">
+                          <span className="material-symbols-outlined text-sm">edit</span>Change
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <DoctorAvatar profile_image={selectedDoctor.profile_image} doctor_name={selectedDoctor.name} size={44} />
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{selectedDoctor.name}</p>
+                          <p className="text-[11px] text-sky-600 dark:text-sky-400">{selectedDoctor.specialization}</p>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500">{selectedDoctor.experience} years experience</p>
+                        </div>
+                      </div>
+                      {selectedDoctor.hospital && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-1">
+                          <span className="material-symbols-outlined text-xs">location_on</span>
+                          {selectedDoctor.hospital}
+                        </p>
+                      )}
                     </div>
                   )}
-                </>
-              )}
-              <button
-                type="button"
-                disabled={booking || !selectedSlot}
-                onClick={handleBook}
-                className="w-full btn-primary py-3.5 shadow-lg shadow-sky-500/25 dark:shadow-sky-500/10 cursor-pointer font-bold"
-              >
-                {booking ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Booking...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-lg">event_available</span>
-                    Book Appointment
-                  </>
-                )}
-              </button>
-            </div>
+
+                  <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-slate-800/40 border border-emerald-100 dark:border-slate-700/50">
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-3">Date & Time</span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base text-slate-400">calendar_today</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {selectedDate?.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-base text-slate-400">schedule</span>
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          {selectedSlot?.start_time?.slice(0, 5)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {selectedDoctor?.consultation_fee != null && (
+                    <div className="p-4 rounded-2xl bg-violet-50/50 dark:bg-slate-800/40 border border-violet-100 dark:border-slate-700/50">
+                      <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-2">Consultation Fee</span>
+                      <p className="text-lg font-bold text-slate-900 dark:text-slate-100">{formatINR(selectedDoctor.consultation_fee)}</p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  disabled={booking || !selectedSlot}
+                  onClick={handleBook}
+                  className="w-full btn-primary py-3.5 shadow-lg shadow-sky-500/25 dark:shadow-sky-500/10 cursor-pointer font-bold"
+                >
+                  {booking ? (
+                    <>
+                      <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Booking...
+                    </>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined text-lg">event_available</span>
+                      Confirm Appointment
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
 
           </div>
 
@@ -503,7 +872,7 @@ export default function Appointments() {
 
             {/* Appointments Section */}
             <div>
-              <div className="flex items-center justify-between mb-7">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-7">
                 <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-3">
                   <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-cyan-500 to-sky-500 flex items-center justify-center shadow-md">
                     <span className="material-symbols-outlined text-sm text-white">event_note</span>
@@ -747,4 +1116,3 @@ function RescheduleModal({ appointment, doctor, onClose, onReschedule }) {
     </div>
   );
 }
-

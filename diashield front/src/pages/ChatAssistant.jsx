@@ -14,9 +14,8 @@ export default function ChatAssistant() {
       setError("");
       try {
         const data = await getChatHistory();
-// Expecting array of { message, response }
         const formatted = [];
-        data.forEach((item, idx) => {
+        (data.chats || []).forEach((item, idx) => {
           if (item.message) {
             formatted.push({
               id: idx * 2 + 1,

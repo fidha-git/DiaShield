@@ -14,6 +14,9 @@ import {
   AdminToast,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
+
+const PAGE_SIZE = 5;
 
 function statusTone(status) {
   const v = (status || "").toLowerCase();
@@ -43,6 +46,7 @@ export default function AdminAppointments() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [doctorFilter, setDoctorFilter] = useState("all");
   const [patientFilter, setPatientFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const closeToast = () => setToast(null);
 
@@ -102,6 +106,20 @@ export default function AdminAppointments() {
     });
   }, [appointments, search, statusFilter, doctorFilter, patientFilter, userMap, doctorMap]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedAppointments = useMemo(
+    () => filtered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE
+    ),
+    [filtered, currentPage]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
   const dateBuckets = useMemo(() => {
     const map = new Map();
     filtered.forEach((apt) => {
@@ -147,20 +165,20 @@ export default function AdminAppointments() {
 
       <AdminPanel>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
-          <AdminInput placeholder="Search by patient or doctor" value={search} onChange={(e) => setSearch(e.target.value)} />
-          <AdminSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+          <AdminInput placeholder="Search by patient or doctor" value={search} onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }} />
+          <AdminSelect value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Statuses</option>
             <option value="booked">Booked</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </AdminSelect>
-          <AdminSelect value={doctorFilter} onChange={(e) => setDoctorFilter(e.target.value)}>
+          <AdminSelect value={doctorFilter} onChange={(e) => { setDoctorFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Doctors</option>
             {doctors.map((d) => (
               <option key={d.id} value={String(d.id)}>{d.name}</option>
             ))}
           </AdminSelect>
-          <AdminSelect value={patientFilter} onChange={(e) => setPatientFilter(e.target.value)}>
+          <AdminSelect value={patientFilter} onChange={(e) => { setPatientFilter(e.target.value); setCurrentPage(1); }}>
             <option value="all">All Patients</option>
             {users.filter((u) => (u.role || "patient") === "patient").map((u) => (
               <option key={u.id} value={String(u.id)}>{u.username || u.email}</option>
@@ -178,38 +196,49 @@ export default function AdminAppointments() {
         ) : filtered.length === 0 ? (
           <EmptyCard icon="event_busy" title="No appointments match filters" subtitle="Try clearing filters or switching the view mode." />
         ) : viewMode === "list" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {filtered.map((apt) => {
-              const patient = userMap.get(apt.user_id);
-              const doctor = doctorMap.get(apt.doctor_id);
-              const created = apt.created_at ? new Date(apt.created_at) : null;
-              return (
-                <article key={apt.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 hover:shadow-xl transition-all">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={patient?.username || `Patient #${apt.user_id}`} size="md" />
-                      <div>
-                        <h3 className="text-base font-bold text-slate-900">{patient?.username || `Patient #${apt.user_id}`}</h3>
-                        <p className="text-sm text-slate-500">with Dr. {doctor?.name || `#${apt.doctor_id}`}</p>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {paginatedAppointments.map((apt) => {
+                const patient = userMap.get(apt.user_id);
+                const doctor = doctorMap.get(apt.doctor_id);
+                const created = apt.created_at ? new Date(apt.created_at) : null;
+                return (
+                  <article key={apt.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 hover:shadow-xl transition-all">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={patient?.username || `Patient #${apt.user_id}`} size="md" />
+                        <div>
+                          <h3 className="text-base font-bold text-slate-900">{patient?.username || `Patient #${apt.user_id}`}</h3>
+                          <p className="text-sm text-slate-500">with Dr. {doctor?.name || `#${apt.doctor_id}`}</p>
+                        </div>
                       </div>
+                      <Badge tone={statusTone(apt.status)}>{apt.status || "Unknown"}</Badge>
                     </div>
-                    <Badge tone={statusTone(apt.status)}>{apt.status || "Unknown"}</Badge>
-                  </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                    <Mini label="Appointment ID" value={`#${apt.id}`} icon="tag" />
-                    <Mini label="Slot" value={`#${apt.slot_id}`} icon="schedule" />
-                    <Mini label="Patient" value={`ID ${apt.user_id}`} icon="person" />
-                    <Mini label="Doctor" value={`ID ${apt.doctor_id}`} icon="stethoscope" />
-                  </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                      <Mini label="Appointment ID" value={`#${apt.id}`} icon="tag" />
+                      <Mini label="Slot" value={`#${apt.slot_id}`} icon="schedule" />
+                      <Mini label="Patient" value={`ID ${apt.user_id}`} icon="person" />
+                      <Mini label="Doctor" value={`ID ${apt.doctor_id}`} icon="stethoscope" />
+                    </div>
 
-                  <div className="mt-4 text-xs text-slate-400">
-                    Created {created ? created.toLocaleString() : "-"}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                    <div className="mt-4 text-xs text-slate-400">
+                      Created {created ? created.toLocaleString() : "-"}
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            <SimplePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+              itemLabel="appointments"
+            />
+          </>
         ) : (
           <AdminPanel title="Calendar" icon="calendar_month">
             <div className="grid grid-cols-7 gap-2">
@@ -225,12 +254,12 @@ export default function AdminAppointments() {
                 });
 
                 return (
-                  <div key={day} className="min-h-[110px] rounded-xl border border-slate-200 bg-slate-50 p-2">
+                  <div key={day} className="min-h-[80px] md:min-h-[110px] rounded-xl border border-slate-200 bg-slate-50 p-2">
                     <p className="text-xs font-semibold text-slate-700">{day}</p>
                     <div className="mt-1 space-y-1">
                       {dayEvents.slice(0, 3).map((apt) => (
                         <div key={apt.id} className="text-[11px] rounded-md px-2 py-1 bg-white border border-slate-200 truncate">
-                          #{apt.id} • {doctorMap.get(apt.doctor_id)?.name || `Dr #${apt.doctor_id}`}
+                          #{apt.id} ï¿½ {doctorMap.get(apt.doctor_id)?.name || `Dr #${apt.doctor_id}`}
                         </div>
                       ))}
                       {dayEvents.length > 3 ? <div className="text-[11px] text-slate-500">+{dayEvents.length - 3} more</div> : null}

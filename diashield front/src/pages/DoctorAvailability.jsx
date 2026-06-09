@@ -1,10 +1,13 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   getMyDoctorProfile,
   getDoctorSlots,
+  getDoctorAppointments,
   addDoctorSlot,
   updateDoctorSlot,
   deleteDoctorSlot,
+  getAppointmentBySlot,
+  doctorCancelAppointment,
 } from "../services/doctorService";
 
 function Toast({ message, type, onClose }) {
@@ -140,7 +143,33 @@ function SlotModal({ slot, onClose, onSave, onDelete }) {
   );
 }
 
-function ConfirmDeleteModal({ slot, onClose, onConfirm }) {
+function ConfirmDeleteModal({ slot, onClose, onConfirm, loading, isBlocked }) {
+  if (isBlocked) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+        <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-sm animate-scale-in text-center" onClick={(e) => e.stopPropagation()}>
+          <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+            <span className="material-symbols-outlined text-3xl text-amber-500">block</span>
+          </div>
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">Cannot Delete Slot</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+            This slot has an active appointment and cannot be deleted.
+          </p>
+          <label className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 mb-4 opacity-50 cursor-not-allowed">
+            <input type="checkbox" disabled className="rounded" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Admin override (coming soon)</span>
+          </label>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
       <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-sm animate-scale-in text-center" onClick={(e) => e.stopPropagation()}>
@@ -149,25 +178,42 @@ function ConfirmDeleteModal({ slot, onClose, onConfirm }) {
         </div>
         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">Delete Slot</h3>
         <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-          Delete slot on {new Date(slot.date).toLocaleDateString()} at {slot.start_time?.slice(0, 5)}?
+          Are you sure you want to delete this slot? This action cannot be undone.
         </p>
         <div className="flex justify-center gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800"
+            disabled={loading}
+            className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(slot.id)}
-            className="px-5 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-semibold hover:from-red-600 hover:to-red-700 transition-all"
+            onClick={() => {
+              console.log("%c[ConfirmDeleteModal] Delete button clicked, slot.id:", "background:purple;color:white;padding:4px", slot?.id, "slot:", slot);
+              if (typeof onConfirm !== "function") {
+                console.error("[ConfirmDeleteModal] FATAL: onConfirm is NOT a function!", onConfirm);
+              }
+              onConfirm(slot.id);
+            }}
+            disabled={loading}
+            className="px-5 py-2 rounded-lg bg-gradient-to-r from-red-600 to-red-500 text-white text-xs font-semibold hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 flex items-center gap-1.5"
           >
-            Delete
+            {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+            {loading ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function todayLocal() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
 }
 
 export default function DoctorAvailability() {
@@ -178,6 +224,14 @@ export default function DoctorAvailability() {
   const closeToast = useCallback(() => setToast(null), []);
   const [modalSlot, setModalSlot] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [blockedDeleteTarget, setBlockedDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [bookingDetail, setBookingDetail] = useState(null);
+  const [bookingDetailLoading, setBookingDetailLoading] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [menuOpenSlotId, setMenuOpenSlotId] = useState(null);
+  const menuRef = useRef(null);
 
   const [createForm, setCreateForm] = useState({
     date: "",
@@ -189,8 +243,29 @@ export default function DoctorAvailability() {
   const loadSlots = useCallback(async (docId) => {
     setLoading(true);
     try {
-      const res = await getDoctorSlots(docId);
-      setSlots(Array.isArray(res.data) ? res.data : []);
+      const [slotsRes, apptsRes] = await Promise.allSettled([
+        getDoctorSlots(docId),
+        getDoctorAppointments(docId, { limit: 100 }),
+      ]);
+      const rawSlots = slotsRes.status === "fulfilled" && Array.isArray(slotsRes.value.data)
+        ? slotsRes.value.data : [];
+      const appointments = apptsRes.status === "fulfilled" && Array.isArray(apptsRes.value.data?.appointments)
+        ? apptsRes.value.data.appointments : [];
+
+      const slotApptMap = {};
+      appointments.forEach(a => { slotApptMap[a.slot_id] = a; });
+
+      const enrichedSlots = rawSlots.map(s => ({
+        ...s,
+        patient_name: s.is_booked && slotApptMap[s.id]?.patient_name
+          ? slotApptMap[s.id].patient_name
+          : null,
+        appointment_id: s.is_booked && slotApptMap[s.id]?.id
+          ? slotApptMap[s.id].id
+          : null,
+      }));
+
+      setSlots(enrichedSlots);
     } catch {
       setToast({ message: "Failed to load slots", type: "error" });
     } finally {
@@ -237,15 +312,28 @@ export default function DoctorAvailability() {
   };
 
   const handleDelete = async (slotId) => {
+    console.log("%c[handleDelete] called with slotId: %s", "background:red;color:white;font-size:14px;padding:4px", slotId);
+    console.trace("[handleDelete] stack trace");
+    setDeleteLoading(true);
+    console.log("%c[handleDelete] deleteLoading set to true", "color:blue");
     try {
-      await deleteDoctorSlot(slotId);
+      console.log("%c[handleDelete] calling deleteDoctorSlot(%s)...", "color:orange", slotId);
+      const response = await deleteDoctorSlot(slotId);
+      console.log("%c[handleDelete] deleteDoctorSlot SUCCEEDED", "background:green;color:white;font-size:14px;padding:4px", response);
       setToast({ message: "Slot deleted successfully", type: "success" });
+      setSlots((prev) => prev.filter((s) => s.id !== slotId));
       setDeleteTarget(null);
       setModalSlot(null);
-      loadSlots(profile.id);
     } catch (err) {
-      const msg = err.response?.data?.detail || "Failed to delete slot";
+      console.error("[handleDelete] API error:", err);
+      console.error("[handleDelete] err.response:", err.response);
+      console.error("[handleDelete] err.response.data:", err.response?.data);
+      console.error("[handleDelete] err.response.status:", err.response?.status);
+      const serverMsg = err.response?.data?.detail || err.response?.data?.message;
+      const msg = serverMsg || err.message || "Failed to delete slot";
       setToast({ message: msg, type: "error" });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -281,10 +369,51 @@ export default function DoctorAvailability() {
     }
   };
 
+  const handleViewBooking = async (slot) => {
+    setBookingDetailLoading(true);
+    setBookingDetail(null);
+    try {
+      const res = await getAppointmentBySlot(slot.id);
+      setBookingDetail(res.data);
+    } catch (err) {
+      const msg = err.response?.data?.detail || "Failed to load booking details";
+      setToast({ message: msg, type: "error" });
+    } finally {
+      setBookingDetailLoading(false);
+    }
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!cancelTarget?.appointment_id) return;
+    setCancelLoading(true);
+    try {
+      await doctorCancelAppointment(cancelTarget.appointment_id);
+      setToast({ message: "Appointment cancelled successfully", type: "success" });
+      setCancelTarget(null);
+      setMenuOpenSlotId(null);
+      loadSlots(profile.id);
+    } catch (err) {
+      const msg = err.response?.data?.detail || "Failed to cancel appointment";
+      setToast({ message: msg, type: "error" });
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpenSlotId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const totalSlots = slots.length;
   const bookedSlots = slots.filter((s) => s.is_booked).length;
   const availableSlots = totalSlots - bookedSlots;
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = todayLocal();
   const todaysSlots = slots.filter((s) => s.date === todayKey).length;
 
   const sortedSlots = [...slots].sort((a, b) => {
@@ -446,28 +575,77 @@ export default function DoctorAvailability() {
 
                   <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
                     <div>
-                      <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-500">Number of Bookings</p>
-                      <p className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100">{slot.is_booked ? 1 : 0}</p>
+                      <p className="text-[12px] font-semibold text-slate-500 dark:text-slate-500">
+                        {slot.is_booked ? "Booked By" : "Status"}
+                      </p>
+                      <p className="mt-1 text-base font-bold text-slate-900 dark:text-slate-100 truncate max-w-[120px]">
+                        {slot.is_booked
+                          ? (slot.patient_name || "Patient")
+                          : "Available"}
+                      </p>
                     </div>
 
-                    {!slot.is_booked && (
-                      <div className="flex items-center gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => setModalSlot(slot)}
-                          className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
-                          title="Edit"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">edit</span>
-                        </button>
-                        <button
-                          onClick={() => setDeleteTarget(slot)}
-                          className="h-10 w-10 rounded-xl border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center justify-center"
-                          title="Delete"
-                        >
-                          <span className="material-symbols-outlined text-[20px]">delete</span>
-                        </button>
-                      </div>
-                    )}
+                    <div className="relative">
+                      <button
+                        onClick={() => setMenuOpenSlotId(menuOpenSlotId === slot.id ? null : slot.id)}
+                        className="h-10 w-10 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center"
+                        title="Actions"
+                      >
+                        <span className="material-symbols-outlined text-[20px]">more_vert</span>
+                      </button>
+
+                      {menuOpenSlotId === slot.id && (
+                        <div ref={menuRef} className="absolute right-0 top-full mt-1 z-50 min-w-[180px] bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl shadow-slate-200/50 dark:shadow-black/30 py-1.5 animate-scale-in origin-top-right">
+                          {slot.is_booked ? (
+                            <>
+                              <button
+                                onClick={() => { handleViewBooking(slot); setMenuOpenSlotId(null); }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-sky-500">visibility</span>
+                                View Booking Details
+                              </button>
+                              <button
+                                onClick={() => { setCancelTarget(slot); setMenuOpenSlotId(null); }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                Cancel Appointment
+                              </button>
+                              <div className="border-t border-slate-100 dark:border-slate-700 my-1" />
+                              <button
+                                onClick={() => { setBlockedDeleteTarget(slot); setMenuOpenSlotId(null); }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-slate-500 dark:text-slate-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-red-400">delete</span>
+                                Delete Slot
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => { console.log("Edit clicked", slot.id); setModalSlot(slot); setMenuOpenSlotId(null); }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-sky-500/10 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px] text-sky-500">edit</span>
+                                Edit Slot
+                              </button>
+                              <button
+                                onClick={() => {
+                                  console.log("[Delete Slot] clicked for slot:", slot.id, slot);
+                                  setDeleteTarget(slot);
+                                  setMenuOpenSlotId(null);
+                                }}
+                                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                Delete Slot
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -487,10 +665,164 @@ export default function DoctorAvailability() {
         {deleteTarget && (
           <ConfirmDeleteModal
             slot={deleteTarget}
+            loading={deleteLoading}
             onClose={() => setDeleteTarget(null)}
             onConfirm={handleDelete}
           />
         )}
+
+        {blockedDeleteTarget && (
+          <ConfirmDeleteModal
+            slot={blockedDeleteTarget}
+            isBlocked
+            onClose={() => setBlockedDeleteTarget(null)}
+          />
+        )}
+
+        {bookingDetail && (
+          <BookingDetailModal
+            booking={bookingDetail}
+            loading={bookingDetailLoading}
+            onClose={() => setBookingDetail(null)}
+          />
+        )}
+
+        {cancelTarget && (
+          <DoctorCancelModal
+            slot={cancelTarget}
+            loading={cancelLoading}
+            onClose={() => setCancelTarget(null)}
+            onConfirm={handleCancelAppointment}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BookingDetailModal({ booking, loading, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-md animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <span className="material-symbols-outlined text-sky-500">event</span>
+            Booking Details
+          </h3>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-300">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-10">
+            <span className="w-6 h-6 border-2 border-sky-300 border-t-sky-500 rounded-full animate-spin" />
+          </div>
+        ) : booking ? (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-sky-50 dark:bg-sky-500/5 border border-sky-100 dark:border-sky-500/10">
+              <div className="w-12 h-12 rounded-full bg-sky-100 dark:bg-sky-500/20 flex items-center justify-center">
+                <span className="material-symbols-outlined text-sky-500 text-2xl">person</span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Patient</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-slate-100">{booking.patient_name || "Unknown"}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</p>
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {booking.date ? new Date(booking.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "-"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</p>
+                <p className="mt-1">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                    booking.status === "booked"
+                      ? "bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/20"
+                      : booking.status === "completed"
+                      ? "bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20"
+                      : "bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-500/20"
+                  }`}>
+                    {(booking.status || "unknown").toUpperCase()}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Start Time</p>
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">{booking.start_time?.slice(0, 5) || "-"}</p>
+              </div>
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">End Time</p>
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">{booking.end_time?.slice(0, 5) || "-"}</p>
+              </div>
+            </div>
+
+            {booking.created_at && (
+              <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800">
+                <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Booked On</p>
+                <p className="mt-1 text-sm font-bold text-slate-900 dark:text-slate-100">
+                  {new Date(booking.created_at).toLocaleString()}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-10 text-slate-500 dark:text-slate-400">
+            <span className="material-symbols-outlined text-3xl">info</span>
+            <p className="mt-2 text-sm">No booking details available</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DoctorCancelModal({ slot, loading, onClose, onConfirm }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-[#0F172A]/90 border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-lg shadow-slate-100/50 dark:shadow-none p-6 w-full max-w-sm animate-scale-in text-center" onClick={(e) => e.stopPropagation()}>
+        <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+          <span className="material-symbols-outlined text-3xl text-amber-500">event_busy</span>
+        </div>
+        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-2">Cancel Appointment</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+          Cancel appointment for {new Date(slot.date).toLocaleDateString()} at {slot.start_time?.slice(0, 5)}?
+          <br />
+          <span className="text-amber-600 dark:text-amber-400 font-semibold text-xs mt-2 block">
+            The slot will be marked as available again. This action cannot be undone.
+          </span>
+        </p>
+        <div className="flex justify-center gap-3">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"
+          >
+            Keep Booking
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={loading}
+            className="px-5 py-2 rounded-lg bg-gradient-to-r from-amber-600 to-amber-500 text-white text-xs font-semibold hover:from-amber-600 hover:to-amber-700 transition-all disabled:opacity-50 flex items-center gap-1.5"
+          >
+            {loading && <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+            {loading ? "Cancelling..." : "Yes, Cancel Appointment"}
+          </button>
+        </div>
       </div>
     </div>
   );

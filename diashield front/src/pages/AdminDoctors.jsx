@@ -20,6 +20,10 @@ import {
   AdminToast,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
+import { formatINR } from "../utils/currency";
+
+const PAGE_SIZE = 5;
 
 const EMPTY_FORM = {
   name: "",
@@ -35,15 +39,6 @@ const EMPTY_FORM = {
 };
 
 const PROFILE_BASE = "http://127.0.0.1:8000";
-
-function formatINR(value) {
-  if (value == null || Number.isNaN(Number(value))) return "-";
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-}
 
 function Modal({ title, icon, children, onClose, wide = false }) {
   return (
@@ -85,6 +80,7 @@ export default function AdminDoctors() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [specialization, setSpecialization] = useState("all");
+  const [page, setPage] = useState(1);
   const [toast, setToast] = useState(null);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -138,6 +134,17 @@ export default function AdminDoctors() {
     });
   }, [doctors, search, specialization]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const paginated = useMemo(
+    () => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filtered, page]
+  );
+
   return (
     <AdminPage>
       <AdminToast toast={toast} onClose={closeToast} />
@@ -159,9 +166,18 @@ export default function AdminDoctors() {
           <AdminInput
             placeholder="Search doctor by name, specialization, hospital"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
-          <AdminSelect value={specialization} onChange={(e) => setSpecialization(e.target.value)}>
+          <AdminSelect
+            value={specialization}
+            onChange={(e) => {
+              setSpecialization(e.target.value);
+              setPage(1);
+            }}
+          >
             {specializations.map((sp) => (
               <option key={sp} value={sp}>
                 {sp === "all" ? "All Specializations" : sp}
@@ -189,53 +205,64 @@ export default function AdminDoctors() {
             action={<AdminButton onClick={() => setCreateOpen(true)}>Add Doctor</AdminButton>}
           />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((doctor) => {
-              const totalAppointments = appointmentCounts.get(doctor.id) || 0;
-              const rating = (4 + ((doctor.experience || 1) % 10) / 10).toFixed(1);
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {paginated.map((doctor) => {
+                const totalAppointments = appointmentCounts.get(doctor.id) || 0;
+                const rating = (4 + ((doctor.experience || 1) % 10) / 10).toFixed(1);
 
-              return (
-                <article key={doctor.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Avatar
-                        name={doctor.name}
-                        src={doctor.profile_image ? `${PROFILE_BASE}${doctor.profile_image}` : ""}
-                        size="lg"
-                      />
-                      <div className="min-w-0">
-                        <h3 className="text-lg font-bold text-slate-900 truncate">{doctor.name}</h3>
-                        <p className="text-sm text-slate-500 truncate">{doctor.hospital || "Hospital not set"}</p>
-                        <div className="mt-1">
-                          <Badge tone="sky">{doctor.specialization || "General"}</Badge>
+                return (
+                  <article key={doctor.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Avatar
+                          name={doctor.name}
+                          src={doctor.profile_image ? `${PROFILE_BASE}${doctor.profile_image}` : ""}
+                          size="lg"
+                        />
+                        <div className="min-w-0">
+                          <h3 className="text-lg font-bold text-slate-900 truncate">{doctor.name}</h3>
+                          <p className="text-sm text-slate-500 truncate">{doctor.hospital || "Hospital not set"}</p>
+                          <div className="mt-1">
+                            <Badge tone="sky">{doctor.specialization || "General"}</Badge>
+                          </div>
                         </div>
                       </div>
+                      <Badge tone="emerald">{rating}?</Badge>
                     </div>
-                    <Badge tone="emerald">{rating}?</Badge>
-                  </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                    <Info label="Experience" value={`${doctor.experience || 0} years`} icon="work_history" />
-                    <Info label="Appointments" value={totalAppointments} icon="calendar_month" />
-                    <Info label="Fee" value={formatINR(doctor.consultation_fee)} icon="payments" />
-                    <Info label="Qualification" value={doctor.qualification || "-"} icon="school" />
-                  </div>
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                      <Info label="Experience" value={`${doctor.experience || 0} years`} icon="work_history" />
+                      <Info label="Appointments" value={totalAppointments} icon="calendar_month" />
+                      <Info label="Fee" value={formatINR(doctor.consultation_fee)} icon="payments" />
+                      <Info label="Qualification" value={doctor.qualification || "-"} icon="school" />
+                    </div>
 
-                  <div className="mt-4 flex gap-2">
-                    <AdminButton variant="outline" className="flex-1 !text-xs !px-2" onClick={() => setViewId(doctor.id)}>
-                      View
-                    </AdminButton>
-                    <AdminButton variant="outline" className="flex-1 !text-xs !px-2" onClick={() => setEditId(doctor.id)}>
-                      Edit
-                    </AdminButton>
-                    <AdminButton variant="danger" className="flex-1 !text-xs !px-2" onClick={() => setSuspendDoctor(doctor)}>
-                      Suspend
-                    </AdminButton>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <AdminButton variant="outline" className="flex-1 !text-xs !px-2" onClick={() => setViewId(doctor.id)}>
+                        View
+                      </AdminButton>
+                      <AdminButton variant="outline" className="flex-1 !text-xs !px-2" onClick={() => setEditId(doctor.id)}>
+                        Edit
+                      </AdminButton>
+                      <AdminButton variant="danger" className="flex-1 !text-xs !px-2" onClick={() => setSuspendDoctor(doctor)}>
+                        Suspend
+                      </AdminButton>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            <SimplePagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setPage}
+              itemLabel="doctors"
+            />
+          </>
         )}
       </div>
 

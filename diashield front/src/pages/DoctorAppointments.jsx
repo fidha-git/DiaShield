@@ -323,7 +323,6 @@ export default function DoctorAppointments() {
   const [totalPages, setTotalPages] = useState(1);
   const [toast, setToast] = useState(null);
   const closeToast = useCallback(() => setToast(null), []);
-  const [selectedApt, setSelectedApt] = useState(null);
   const [noteModal, setNoteModal] = useState(null);
   const [createPrescModal, setCreatePrescModal] = useState(null);
   const [viewPrescModal, setViewPrescModal] = useState(null);
@@ -630,7 +629,7 @@ export default function DoctorAppointments() {
                       apt={apt}
                       hasPrescription={hasPresc}
                       prescription={presc}
-                      onView={() => setSelectedApt(apt)}
+                      onView={() => navigate(`/doctor/patient/${apt.user_id}`)}
                       onAddNote={() => setNoteModal(apt)}
                       onComplete={() => handleComplete(apt.id)}
                       onCreatePrescription={() => setCreatePrescModal(apt)}
@@ -668,10 +667,6 @@ export default function DoctorAppointments() {
             </>
           )}
         </section>
-
-        {selectedApt && (
-          <AppointmentDetailsModal appointment={selectedApt} onClose={() => setSelectedApt(null)} />
-        )}
 
         {noteModal && (
           <QuickNoteModal appointment={noteModal} onClose={() => setNoteModal(null)} onSave={handleAddNote} />
@@ -720,55 +715,6 @@ function SummaryChip({ label, value }) {
     <div className="rounded-xl border border-sky-200 bg-white/80 px-3 py-2">
       <p className="text-[10px] uppercase tracking-[0.14em] font-semibold text-slate-500">{label}</p>
       <p className="text-[20px] leading-none font-extrabold text-slate-900 mt-1">{value}</p>
-    </div>
-  );
-}
-
-function AppointmentDetailsModal({ appointment, onClose }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-2xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#0F172A]/90 p-6 shadow-2xl animate-scale-in"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <span className="material-symbols-outlined text-sky-600">patient_list</span>
-            Patient Overview
-          </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
-          <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 text-white font-bold flex items-center justify-center shadow-lg shadow-sky-500/30">
-            {getPatientInitial(appointment.patient_name, appointment.id)}
-          </div>
-          <div>
-            <h4 className="text-lg font-bold text-slate-900">
-              {appointment.patient_name || `Patient #${appointment.id}`}
-            </h4>
-            <div className="mt-1 flex items-center gap-2">
-              <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getStatusBadge(appointment.status)}`}>
-                {appointment.status}
-              </span>
-              <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold ${getRiskBadge(getRiskLevel(appointment))}`}>
-                Risk: {getRiskLevel(appointment)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mt-5">
-          <DetailItem label="Date" value={formatDate(appointment.date)} />
-          <DetailItem label="Time" value={`${formatTime(appointment.start_time)} - ${formatTime(appointment.end_time)}`} />
-          <DetailItem label="Type" value={getAppointmentType(appointment)} />
-          <DetailItem label="Age / Gender" value={`${getPatientAge(appointment) || "N/A"} / ${getPatientGender(appointment) || "N/A"}`} />
-          <DetailItem label="Doctor ID" value={`#${appointment.doctor_id}`} />
-          <DetailItem label="Slot ID" value={`#${appointment.slot_id}`} />
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 
@@ -14,10 +14,16 @@ const sidebarLinks = [
 
 export default function DoctorLayout() {
   const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <div className="portal-shell">
-      <div className="portal-sidebar w-[280px] flex flex-col p-6 relative">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-30 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
+
+      <div className={`portal-sidebar fixed md:relative w-[280px] flex flex-col p-6 z-40 transition-transform duration-300 -translate-x-full md:translate-x-0 ${sidebarOpen ? "translate-x-0" : ""}`}>
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-sky-300/20 dark:bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-300/20 dark:bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex items-center gap-3 mb-8">
@@ -68,6 +74,9 @@ export default function DoctorLayout() {
       </div>
       <main className="portal-main overflow-auto flex flex-col">
         <div className="portal-topbar">
+          <button className="md:hidden mr-auto h-10 w-10 rounded-xl border border-sky-200 bg-white text-sky-700 flex items-center justify-center hover:bg-sky-50 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-sky-200 dark:hover:bg-slate-700" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <span className="material-symbols-outlined text-[20px]">menu</span>
+          </button>
           <ThemeToggle />
         </div>
         <div className="portal-content-wrap flex-1">

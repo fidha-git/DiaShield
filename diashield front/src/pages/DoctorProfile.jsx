@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { getMyDoctorProfile, updateDoctorProfile, uploadDoctorProfileImage } from "../services/doctorService";
+import { formatINR } from "../utils/currency";
 
 function Toast({ message, type, onClose }) {
   useEffect(() => { const t = setTimeout(onClose, 3500); return () => clearTimeout(t); }, [onClose]);
@@ -12,15 +13,6 @@ function Toast({ message, type, onClose }) {
     </div>
   );
 }
-
-const formatINR = (value) => {
-  if (value == null || isNaN(Number(value))) return "—";
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(Number(value));
-};
 
 export default function DoctorProfile() {
   const [profile, setProfile] = useState(null);

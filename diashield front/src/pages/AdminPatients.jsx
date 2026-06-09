@@ -18,6 +18,7 @@ import {
   MetricCard,
 } from "../components/admin/AdminUI";
 import { HealthcareHero } from "../components/Illustrations";
+import SimplePagination from "../components/ui/SimplePagination";
 
 function riskTone(risk = "") {
   const v = risk.toLowerCase();
@@ -36,6 +37,7 @@ function healthStatusFromRisk(risk = "") {
 }
 
 const PROFILE_BASE = "http://127.0.0.1:8000";
+const PAGE_SIZE = 5;
 
 export default function AdminPatients() {
   const [users, setUsers] = useState([]);
@@ -46,6 +48,7 @@ export default function AdminPatients() {
 
   const [search, setSearch] = useState("");
   const [riskFilter, setRiskFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const load = async () => {
@@ -128,6 +131,20 @@ export default function AdminPatients() {
     });
   }, [patients, search, riskFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedPatients = useMemo(
+    () => filtered.slice(
+      (currentPage - 1) * PAGE_SIZE,
+      currentPage * PAGE_SIZE
+    ),
+    [filtered, currentPage]
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
+
   const stats = useMemo(() => ({
     total: patients.length,
     highRisk: patients.filter((p) => (p.risk || "").toLowerCase().includes("high")).length,
@@ -157,9 +174,15 @@ export default function AdminPatients() {
           <AdminInput
             placeholder="Search patient by username or email"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
           />
-          <AdminSelect value={riskFilter} onChange={(e) => setRiskFilter(e.target.value)}>
+          <AdminSelect value={riskFilter} onChange={(e) => {
+            setRiskFilter(e.target.value);
+            setCurrentPage(1);
+          }}>
             <option value="all">All Risk Levels</option>
             <option value="high">High</option>
             <option value="moderate">Moderate</option>
@@ -179,61 +202,71 @@ export default function AdminPatients() {
         ) : filtered.length === 0 ? (
           <EmptyCard icon="group_off" title="No patients found" subtitle="Try different search criteria or filters." />
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((patient) => (
-              <article key={patient.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 hover:shadow-xl transition-all">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Avatar
-                      name={patient.username || "Patient"}
-                      src={patient.profile_image ? `${PROFILE_BASE}${patient.profile_image}` : ""}
-                      size="lg"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="text-lg font-bold text-slate-900 truncate">{patient.username || "Unknown"}</h3>
-                      <p className="text-sm text-slate-500 truncate">{patient.email}</p>
+          <>
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+              {paginatedPatients.map((patient) => (
+                <article key={patient.id} className="rounded-[20px] border border-sky-100 bg-white p-5 shadow-md shadow-sky-100/50 hover:shadow-xl transition-all">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar
+                        name={patient.username || "Patient"}
+                        src={patient.profile_image ? `${PROFILE_BASE}${patient.profile_image}` : ""}
+                        size="lg"
+                      />
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-bold text-slate-900 truncate">{patient.username || "Unknown"}</h3>
+                        <p className="text-sm text-slate-500 truncate">{patient.email}</p>
+                      </div>
                     </div>
+                    <Badge tone={riskTone(patient.risk)}>{patient.risk}</Badge>
                   </div>
-                  <Badge tone={riskTone(patient.risk)}>{patient.risk}</Badge>
-                </div>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
-                  <Mini label="Health Status" value={patient.healthStatus} icon="monitor_heart" />
-                  <Mini label="Patient ID" value={`#${patient.id}`} icon="tag" />
-                  <Mini
-                    label="Last Appointment"
-                    value={patient.lastAppointment ? new Date(patient.lastAppointment).toLocaleDateString() : "No visits"}
-                    icon="calendar_month"
-                  />
-                  <Mini label="Account" value={patient.is_active === false ? "Inactive" : "Active"} icon="verified_user" />
-                </div>
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
+                    <Mini label="Health Status" value={patient.healthStatus} icon="monitor_heart" />
+                    <Mini label="Patient ID" value={`#${patient.id}`} icon="tag" />
+                    <Mini
+                      label="Last Appointment"
+                      value={patient.lastAppointment ? new Date(patient.lastAppointment).toLocaleDateString() : "No visits"}
+                      icon="calendar_month"
+                    />
+                    <Mini label="Account" value={patient.is_active === false ? "Inactive" : "Active"} icon="verified_user" />
+                  </div>
 
-                <div className="mt-4 flex gap-2">
-                  <AdminButton
-                    variant="outline"
-                    className="flex-1 !text-xs !px-2"
-                    onClick={() => setToast({ type: "success", message: `Patient profile selected: ${patient.username || patient.email}` })}
-                  >
-                    View Profile
-                  </AdminButton>
-                  <AdminButton
-                    variant="outline"
-                    className="flex-1 !text-xs !px-2"
-                    onClick={() => setToast({ type: "success", message: `Timeline opened for ${patient.username || patient.email}` })}
-                  >
-                    View Timeline
-                  </AdminButton>
-                  <AdminButton
-                    variant="outline"
-                    className="flex-1 !text-xs !px-2"
-                    onClick={() => setToast({ type: "success", message: `Contact action prepared for ${patient.email}` })}
-                  >
-                    Contact
-                  </AdminButton>
-                </div>
-              </article>
-            ))}
-          </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <AdminButton
+                      variant="outline"
+                      className="flex-1 !text-xs !px-2"
+                      onClick={() => setToast({ type: "success", message: `Patient profile selected: ${patient.username || patient.email}` })}
+                    >
+                      View Profile
+                    </AdminButton>
+                    <AdminButton
+                      variant="outline"
+                      className="flex-1 !text-xs !px-2"
+                      onClick={() => setToast({ type: "success", message: `Timeline opened for ${patient.username || patient.email}` })}
+                    >
+                      View Timeline
+                    </AdminButton>
+                    <AdminButton
+                      variant="outline"
+                      className="flex-1 !text-xs !px-2"
+                      onClick={() => setToast({ type: "success", message: `Contact action prepared for ${patient.email}` })}
+                    >
+                      Contact
+                    </AdminButton>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <SimplePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filtered.length}
+              pageSize={PAGE_SIZE}
+              onPageChange={setCurrentPage}
+            />
+          </>
         )}
       </div>
     </AdminPage>

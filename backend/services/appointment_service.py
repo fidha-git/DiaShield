@@ -138,9 +138,10 @@ def get_user_appointments(
 ):
     offset = (page - 1) * limit
 
-    # Join appointments, doctors, doctor_availability
+    # Join appointments, doctors, doctor_availability, doctor_notes
     from models.doctor_model import Doctor
     from models.doctor_availability_model import DoctorAvailability
+    from models.doctor_note_model import DoctorNote
 
     base_query = db.query(
         Appointment.id,
@@ -151,9 +152,14 @@ def get_user_appointments(
         DoctorAvailability.start_time,
         DoctorAvailability.end_time,
         Appointment.status,
-        Appointment.created_at
+        Appointment.created_at,
+        DoctorNote.diagnosis.label("note_diagnosis"),
+        DoctorNote.notes.label("note_notes"),
+        DoctorNote.advice.label("note_advice"),
+        DoctorNote.created_at.label("note_created_at")
     ).join(Doctor, Appointment.doctor_id == Doctor.id)
     base_query = base_query.join(DoctorAvailability, Appointment.slot_id == DoctorAvailability.id)
+    base_query = base_query.outerjoin(DoctorNote, DoctorNote.appointment_id == Appointment.id)
     base_query = base_query.filter(Appointment.user_id == user_id)
     if status:
         base_query = base_query.filter(Appointment.status == status)
@@ -173,7 +179,13 @@ def get_user_appointments(
             "start_time": a.start_time,
             "end_time": a.end_time,
             "status": a.status,
-            "created_at": a.created_at
+            "created_at": a.created_at,
+            "doctor_note": {
+                "diagnosis": a.note_diagnosis,
+                "notes": a.note_notes,
+                "advice": a.note_advice,
+                "created_at": a.note_created_at
+            } if a.note_diagnosis else None
         }
         for a in appointments
     ]
@@ -240,6 +252,107 @@ def cancel_appointment(
 
 
 # -------------------------
+# Get appointment by slot
+# -------------------------
+
+def get_appointment_by_slot(
+    db: Session,
+    slot_id: int
+):
+    from models.user_model import User
+    from models.doctor_availability_model import DoctorAvailability
+
+    result = db.query(
+        Appointment.id,
+        Appointment.user_id,
+        Appointment.doctor_id,
+        Appointment.slot_id,
+        Appointment.status,
+        Appointment.created_at,
+        DoctorAvailability.date,
+        DoctorAvailability.start_time,
+        DoctorAvailability.end_time,
+        User.username.label("patient_name")
+    ).join(
+        DoctorAvailability, Appointment.slot_id == DoctorAvailability.id
+    ).join(
+        User, Appointment.user_id == User.id
+    ).filter(
+        Appointment.slot_id == slot_id
+    ).first()
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No appointment found for this slot"
+        )
+
+    return {
+        "id": result.id,
+        "user_id": result.user_id,
+        "doctor_id": result.doctor_id,
+        "slot_id": result.slot_id,
+        "status": result.status,
+        "created_at": result.created_at.isoformat() if result.created_at else None,
+        "date": result.date.isoformat() if result.date else None,
+        "start_time": result.start_time.isoformat() if result.start_time else None,
+        "end_time": result.end_time.isoformat() if result.end_time else None,
+        "patient_name": result.patient_name
+    }
+
+
+# -------------------------
+# Doctor cancel appointment
+# -------------------------
+
+def doctor_cancel_appointment(
+    db: Session,
+    appointment_id: int,
+    doctor_id: int
+):
+    appointment = db.query(
+        Appointment
+    ).filter(
+        Appointment.id == appointment_id
+    ).first()
+
+    if not appointment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Appointment not found"
+        )
+
+    if appointment.doctor_id != doctor_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized — this appointment belongs to another doctor"
+        )
+
+    if appointment.status != "booked":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Appointment is not in booked status"
+        )
+
+    appointment.status = "cancelled"
+
+    slot = db.query(
+        DoctorAvailability
+    ).filter(
+        DoctorAvailability.id == appointment.slot_id
+    ).first()
+
+    if slot:
+        slot.is_booked = False
+
+    db.commit()
+    db.refresh(appointment)
+
+    log_activity(db, doctor_id, "Appointment cancelled by doctor")
+    return appointment
+
+
+# -------------------------
 # Get doctor appointments
 # -------------------------
 
@@ -253,6 +366,7 @@ def get_doctor_appointments(
     offset = (page - 1) * limit
 
     from models.user_model import User
+    from models.patient_model import Patient
     from models.doctor_availability_model import DoctorAvailability
 
     query = db.query(
@@ -265,9 +379,12 @@ def get_doctor_appointments(
         DoctorAvailability.date,
         DoctorAvailability.start_time,
         DoctorAvailability.end_time,
-        User.username.label("patient_name")
+        User.username.label("patient_name"),
+        Patient.id.label("patient_id")
     ).join(
         User, Appointment.user_id == User.id
+    ).join(
+        Patient, Appointment.user_id == Patient.user_id
     ).join(
         DoctorAvailability, Appointment.slot_id == DoctorAvailability.id
     ).filter(
@@ -294,6 +411,7 @@ def get_doctor_appointments(
         {
             "id": a.id,
             "user_id": a.user_id,
+            "patient_id": a.patient_id,
             "doctor_id": a.doctor_id,
             "slot_id": a.slot_id,
             "status": a.status,

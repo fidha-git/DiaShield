@@ -27,3 +27,7 @@ export const blockUser = (userId) => API.put(`/admin/block-user/${userId}`);
 export const unblockUser = (userId) => API.put(`/admin/unblock-user/${userId}`);
 
 export const deleteUser = (userId) => API.delete(`/admin/delete-user/${userId}`);
+
+export const getSettings = () => API.get("/admin/settings");
+
+export const updateSettings = (data) => API.put("/admin/settings", data);

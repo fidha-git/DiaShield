@@ -11,7 +11,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
-import MedicalHistory from './pages/HealthTimeline';
 import HealthRecords from './pages/HealthRecords';
 import DiabetesPrediction from './pages/DiabetesPrediction';
 import PredictionHistory from './pages/PredictionHistory';
@@ -36,6 +35,7 @@ import DoctorClinicalNotes from './pages/DoctorClinicalNotes';
 import DoctorPrescriptions from './pages/DoctorPrescriptions';
 import DoctorProfile from './pages/DoctorProfile';
 import DoctorSettings from './pages/DoctorSettings';
+import DoctorPatientDetails from './pages/DoctorPatientDetails';
 
 import './index.css';
 
@@ -61,7 +61,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         >
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/history" element={<MedicalHistory />} />
+          <Route path="/history" element={<Navigate to="/records" replace />} />
           <Route path="/records" element={<HealthRecords />} />
           <Route path="/prediction" element={<DiabetesPrediction />} />
           <Route path="/prediction-history" element={<PredictionHistory />} />
@@ -102,6 +102,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <Route path="/doctor/prescriptions" element={<DoctorPrescriptions />} />
           <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route path="/doctor/settings" element={<DoctorSettings />} />
+          <Route path="/doctor/patient/:userId" element={<DoctorPatientDetails />} />
         </Route>
 
         {/* Fallback */}

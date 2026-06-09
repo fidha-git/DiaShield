@@ -107,11 +107,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-6">
             <div className="shimmer h-80 rounded-2xl" />
             <div className="shimmer h-80 rounded-2xl" />
-          </div>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
+}
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-[360px]">
@@ -129,10 +129,10 @@ export default function Dashboard() {
       color: 'text-sky-600 dark:text-sky-400 bg-gradient-to-br from-sky-100 to-sky-200 dark:from-slate-800 dark:to-slate-750 border border-sky-100/50 dark:border-slate-700/50'
     },
     {
-      count: dashboard?.medical_history_count ?? 'N/A',
-      label: 'Health Timeline Entries',
-      icon: 'timeline',
-      path: '/history',
+      count: dashboard?.appointments?.length ?? 'N/A',
+      label: 'Total Appointments',
+      icon: 'event_available',
+      path: '/appointments',
       color: 'text-cyan-600 dark:text-cyan-400 bg-gradient-to-br from-cyan-100 to-cyan-200 dark:from-slate-800 dark:to-slate-750 border border-sky-100/50 dark:border-slate-700/50'
     },
     {
@@ -205,8 +205,8 @@ export default function Dashboard() {
                 <div className="flex flex-wrap gap-3 mt-8">
                   <Link to="/records">
                     <button className="btn-primary cursor-pointer">
-                      <span className="material-symbols-outlined text-base">add_circle</span>
-                      Add Record
+                      <span className="material-symbols-outlined text-base">visibility</span>
+                      View Health Records
                     </button>
                   </Link>
                   <Link to="/appointments">
@@ -343,22 +343,22 @@ export default function Dashboard() {
                 <Link to="/records">
                   <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-sky-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover/card:shadow-xl group-hover/card:shadow-sky-500/30 transition-shadow">
-                      <span className="material-symbols-outlined text-white text-xl">add_circle</span>
+                      <span className="material-symbols-outlined text-white text-xl">folder</span>
                     </div>
                     <div>
-                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">Add Health Record</span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Log your latest vitals</span>
+                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">View Health Records</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">View your medical records</span>
                     </div>
                   </div>
                 </Link>
-                <Link to="/history">
-                  <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-cyan-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-cyan-200 dark:hover:border-cyan-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover/card:shadow-xl group-hover/card:shadow-cyan-500/30 transition-shadow">
-                      <span className="material-symbols-outlined text-white text-xl">timeline</span>
+                <Link to="/prediction">
+                  <div className="group/card flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-sky-50 to-white dark:from-slate-900 dark:to-slate-850 border border-slate-100 dark:border-slate-800 hover:border-sky-200 dark:hover:border-sky-500/30 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-500 flex items-center justify-center shadow-lg shadow-sky-500/20 group-hover/card:shadow-xl group-hover/card:shadow-sky-500/30 transition-shadow">
+                      <span className="material-symbols-outlined text-white text-xl">query_stats</span>
                     </div>
                     <div>
-                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">View Health Timeline</span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Review your health journey</span>
+                      <span className="block text-sm font-bold text-slate-900 dark:text-slate-100">Run Risk Assessment</span>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500">Check diabetes risk</span>
                     </div>
                   </div>
                 </Link>
